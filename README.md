@@ -1,8 +1,8 @@
 # QSplitFL
 
-QSplitFL is a research framework that applies Reinforcement Learning to automate split point selection in Federated Split Learning. Instead of manually choosing where to divide a neural network between clients and a server, a capability-aware Deep Q-Network (DQN) agent learns the optimal split point dynamically based on real-time client hardware conditions.
+QSplitFL is a novel framework that applies Reinforcement Learning to adaptively select split points in Federated Split Learning. Instead of manually choosing where to divide a neural network between clients and a server, a capability-aware Deep Q-Network (DQN) agent learns the optimal split point dynamically based on real-time client hardware conditions.
 
-This project implements the algorithms described in the paper: **"Reinforcement Learning Design for Split Learning in a Federated Learning Client Cluster"**.
+This repository implements the algorithms described in the paper: **"Reinforcement Learning Design for Split Learning in a Federated Learning Client Cluster"**.
 
 ---
 
@@ -14,11 +14,10 @@ Choosing this split point manually is suboptimal in heterogeneous environments w
 
 ---
 
-## Project Structure
+## Structure
 
 ```
 QSplitFL/
-├── complete_rl_implementation/     Full system with Committee DQN across multiple datasets
 │   ├── core/                       Core RL source modules
 │   ├── runners/                    Experiment entry points and run scripts
 │   ├── plotting/                   Figure generation and analysis scripts
@@ -33,8 +32,7 @@ QSplitFL/
 │   ├── FMNIST/                     Fashion-MNIST experiment results
 │   ├── Paper_Figures/              Figures for publication
 │   ├── Paper_Figures_New/          Updated publication figures
-│   ├── Paper_Figures_Small/        Cropped and resized figures
-│   └── Organized_Analysis_Results/ Aggregated analysis outputs
+│   └── Paper_Figures_Small/        Cropped and resized figures
 │
 ├── Capability_Aware_DQN_Implementation/    Standalone capability-aware DQN on MNIST
 ├── MNIST_SplitFL_Complete/                 Baseline split FL implementation on MNIST
@@ -274,4 +272,4 @@ Data is partitioned across clients using a Dirichlet distribution (alpha=0.5) to
 
 Training produces per-round accuracy and loss logs, summary CSV files, and visualization plots. Results are saved to dataset-specific subdirectories under `complete_rl_implementation/` (e.g., `MNIST/`, `CIFAR10/`). Processed figures for publication are in `Paper_Figures/` and `Paper_Figures_New/`. Aggregated analysis is in `Organized_Analysis_Results/`.
 
-Expected accuracy of the full QSplitFL system on MNIST after 100 rounds: above 95%.
+
