@@ -9,7 +9,6 @@ This module implements the core split learning mechanics:
 4. Gradient backpropagation across the split
 5. FedAvg aggregation of client-side models
 
-Based on Algorithm 8 (TrainRoundSFL) from the paper.
 """
 
 import torch
@@ -373,5 +372,6 @@ if __name__ == "__main__":
         print(f"  Smashed data shape: {smashed_data.shape}")
         print(f"  Output shape: {output.shape}")
     
-    print("\n✅ All tests passed!")
+    print("\n All tests passed!")
+
 
