@@ -270,6 +270,7 @@ Data is partitioned across clients using a Dirichlet distribution (alpha=0.5) to
 
 ## Results
 
-Training produces per-round accuracy and loss logs, summary CSV files, and visualization plots. Results are saved to dataset-specific subdirectories under `complete_rl_implementation/` (e.g., `MNIST/`, `CIFAR10/`). Processed figures for publication are in `Paper_Figures/` and `Paper_Figures_New/`. Aggregated analysis is in `Organized_Analysis_Results/`.
+Training produces per-round accuracy and loss logs, summary CSV files, and visualization plots. Results are saved to dataset-specific subdirectories under `complete_rl_implementation/` (e.g., `MNIST/`, `CIFAR10/`). Processed figures for publication are in `Paper_Figures/` and `Paper_Figures_New/`.
+
 
 
