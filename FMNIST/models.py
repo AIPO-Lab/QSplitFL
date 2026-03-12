@@ -1,0 +1,3060 @@
+"""
+Neural Network Models for Federated Split Learning - FMNIST
+
+This module contains all available CNN architectures:
+1. CNN - SimpleMNISTCNN (original/baseline)
+2. ResNet50 - Deep residual network with bottleneck blocks
+3. MobileNetV4 - Efficient mobile architecture
+4. ConvNeXt - Modern CNN inspired by vision transformers
+
+All models support split learning with configurable split points.
+Input: 1 channels, Output: 10 classes
+"""
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+
+# ============================================================================
+# Original CNN Architecture for FMNIST
+# ============================================================================
+
+class ResNetFed(nn.Module):
+    """
+    ResNet-18 variant optimized for CIFAR-10 (32x32 images).
+    Designed for split learning with easily separable layers.
+    """
+    def __init__(self, num_classes=10):
+        super(ResNetFed, self).__init__()
+        
+        # Initial convolution
+        self.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(64)
+        
+        # ResNet blocks (ResNet-34 style: [3, 4, 6, 3])
+        self.layer1 = self._make_layer(64, 64, 3, stride=1)
+        self.layer2 = self._make_layer(64, 128, 4, stride=2)
+        self.layer3 = self._make_layer(128, 256, 6, stride=2)
+        self.layer4 = self._make_layer(256, 512, 3, stride=2)
+        
+        # Final layers
+        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+        self.fc = nn.Linear(512, num_classes)
+        
+        # Split configuration
+        self.split_mode = 'full' # 'full', 'client', 'server'
+        self.split_layer = None
+        
+    def configure_split(self, mode, split_layer):
+        """
+        Configure the model for split learning.
+        
+        Args:
+            mode: 'client' or 'server'
+            split_layer: Split layer index
+        """
+        self.split_mode = mode
+        self.split_layer = split_layer
+        
+    def _make_layer(self, in_channels, out_channels, num_blocks, stride):
+        """Create a ResNet layer with multiple residual blocks."""
+        layers = []
+        # First block may have stride > 1
+        layers.append(ResidualBlock(in_channels, out_channels, stride))
+        # Remaining blocks
+        for _ in range(1, num_blocks):
+            layers.append(ResidualBlock(out_channels, out_channels, 1))
+        return nn.Sequential(*layers)
+    
+    def forward(self, x):
+        if self.split_mode == 'full':
+            return self._forward_full(x)
+        elif self.split_mode == 'client':
+            return self._forward_client(x)
+        elif self.split_mode == 'server':
+            return self._forward_server(x)
+        else:
+            raise ValueError(f"Unknown split mode: {self.split_mode}")
+
+    def _forward_full(self, x):
+        # Initial conv
+        out = F.relu(self.bn1(self.conv1(x)))
+        
+        # ResNet layers
+        out = self.layer1(out)
+        out = self.layer2(out)
+        out = self.layer3(out)
+        out = self.layer4(out)
+        
+        # Global average pooling and FC
+        out = self.avgpool(out)
+        out = out.view(out.size(0), -1)
+        out = self.fc(out)
+        
+        return out
+        
+    def _forward_client(self, x):
+        # Always run initial block
+        out = F.relu(self.bn1(self.conv1(x)))
+        out = self.layer1(out)
+        
+        # Split logic based on ResNet-34 depth
+        if self.split_layer <= 5:
+            # Split 5: After Layer 1 (all 3 blocks)
+            return out
+            
+        if self.split_layer == 6:
+            # Split 6: After Layer 2, Block 2 (halfway through layer 2)
+            out = self.layer2[0](out)
+            out = self.layer2[1](out)
+            return out
+            
+        # Run full layer2
+        out = self.layer2(out)
+        
+        if self.split_layer == 7:
+            # Split 7: After Layer 2 (all 4 blocks)
+            return out
+            
+        if self.split_layer == 8:
+            # Split 8: After Layer 3, Block 3 (halfway through layer 3)
+            out = self.layer3[0](out)
+            out = self.layer3[1](out)
+            out = self.layer3[2](out)
+            return out
+            
+        # Run full layer3
+        out = self.layer3(out)
+        
+        if self.split_layer == 9:
+            # Split 9: After Layer 3 (all 6 blocks)
+            return out
+            
+        # If split_layer > 9, run layer4 too
+        out = self.layer4(out)
+        return out
+
+    def _forward_server(self, x):
+        out = x
+        
+        # Resume where client left off
+        if self.split_layer <= 5:
+            out = self.layer2(out)
+            out = self.layer3(out)
+            out = self.layer4(out)
+        elif self.split_layer == 6:
+            # Client ran layer2[0-1], server runs layer2[2:]
+            if len(self.layer2) > 2:
+                out = self.layer2[2:](out)
+            out = self.layer3(out)
+            out = self.layer4(out)
+        elif self.split_layer == 7:
+            out = self.layer3(out)
+            out = self.layer4(out)
+        elif self.split_layer == 8:
+            # Client ran layer3[0-2], server runs layer3[3:]
+            if len(self.layer3) > 3:
+                out = self.layer3[3:](out)
+            out = self.layer4(out)
+        elif self.split_layer == 9:
+            out = self.layer4(out)
+            
+        # Final layers
+        out = self.avgpool(out)
+        out = out.view(out.size(0), -1)
+        out = self.fc(out)
+        
+        return out
+
+
+
+
+
+class ResidualBlock(nn.Module):
+    """Basic residual block for ResNet."""
+    def __init__(self, in_channels, out_channels, stride=1):
+        super(ResidualBlock, self).__init__()
+        
+        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, 
+                               stride=stride, padding=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(out_channels)
+        
+        self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3,
+                               stride=1, padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(out_channels)
+        
+        # Shortcut connection
+        self.shortcut = nn.Sequential()
+        if stride != 1 or in_channels != out_channels:
+            self.shortcut = nn.Sequential(
+                nn.Conv2d(in_channels, out_channels, kernel_size=1, 
+                         stride=stride, bias=False),
+                nn.BatchNorm2d(out_channels)
+            )
+    
+    def forward(self, x):
+        out = F.relu(self.bn1(self.conv1(x)))
+        out = self.bn2(self.conv2(out))
+        out += self.shortcut(x)
+        out = F.relu(out)
+        return out
+
+
+
+
+
+class SimpleMNISTCNN(nn.Module):
+    """
+    Enhanced CNN for MNIST with 10 logical layers for split learning.
+    Designed with paper-compliant split points.
+    """
+    def __init__(self, num_classes=10):
+        super(SimpleMNISTCNN, self).__init__()
+        
+        # Convolutional layers (3 conv blocks)
+        self.conv1 = nn.Conv2d(1, 32, kernel_size=3, padding=1)
+        self.bn1 = nn.BatchNorm2d(32)
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
+        self.bn2 = nn.BatchNorm2d(64)
+        self.conv3 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
+        self.bn3 = nn.BatchNorm2d(128)
+        self.pool = nn.MaxPool2d(2, 2)
+        
+        # Fully connected layers (6 FC layers)
+        # After 3 pooling operations: 28 -> 14 -> 7 -> 3 (with padding adjustments)
+        self.fc1 = nn.Linear(128 * 3 * 3, 512)
+        self.fc2 = nn.Linear(512, 256)
+        self.fc3 = nn.Linear(256, 128)
+        self.fc4 = nn.Linear(128, 64)
+        self.fc5 = nn.Linear(64, 32)
+        self.fc6 = nn.Linear(32, num_classes)
+        
+        self.dropout = nn.Dropout(0.25)
+
+        # Split configuration
+        self.split_mode = 'full' # 'full', 'client', 'server'
+        self.split_layer = None
+
+    def configure_split(self, mode, split_layer):
+        """
+        Configure the model for split learning.
+        
+        Args:
+            mode: 'client' or 'server'
+            split_layer: Split layer index (1-9 for 10-layer model)
+                Layer 1: After conv1+bn1+relu
+                Layer 2: After pool1
+                Layer 3: After conv2+bn2+relu
+                Layer 4: After pool2
+                Layer 5: After conv3+bn3+relu, pool3, flatten
+                Layer 6: After fc1+relu+dropout
+                Layer 7: After fc2+relu
+                Layer 8: After fc3+relu
+                Layer 9: After fc4+relu
+        """
+        self.split_mode = mode
+        self.split_layer = split_layer
+    
+    def forward(self, x):
+        if self.split_mode == 'full':
+            return self._forward_full(x)
+        elif self.split_mode == 'client':
+            return self._forward_client(x)
+        elif self.split_mode == 'server':
+            return self._forward_server(x)
+        else:
+            raise ValueError(f"Unknown split mode: {self.split_mode}")
+
+    def _forward_full(self, x):
+        # Conv blocks
+        x = F.relu(self.bn1(self.conv1(x)))
+        x = self.pool(x)
+        x = F.relu(self.bn2(self.conv2(x)))
+        x = self.pool(x)
+        x = F.relu(self.bn3(self.conv3(x)))
+        x = self.pool(x)
+        
+        # Flatten
+        x = x.view(x.size(0), -1)
+        
+        # FC layers
+        x = F.relu(self.fc1(x))
+        x = self.dropout(x)
+        x = F.relu(self.fc2(x))
+        x = F.relu(self.fc3(x))
+        x = F.relu(self.fc4(x))
+        x = F.relu(self.fc5(x))
+        x = self.fc6(x)
+        
+        return x
+
+    def _forward_client(self, x):
+        # Split 1: After conv1 block
+        x = F.relu(self.bn1(self.conv1(x)))
+        if self.split_layer == 1:
+            return x
+            
+        # Split 2: After pool1
+        x = self.pool(x)
+        if self.split_layer == 2:
+            return x
+            
+        # Split 3: After conv2 block
+        x = F.relu(self.bn2(self.conv2(x)))
+        if self.split_layer == 3:
+            return x
+            
+        # Split 4: After pool2
+        x = self.pool(x)
+        if self.split_layer == 4:
+            return x
+            
+        # Split 5: After conv3 block + pool3 + flatten
+        x = F.relu(self.bn3(self.conv3(x)))
+        x = self.pool(x)
+        x = x.view(x.size(0), -1)
+        if self.split_layer == 5:
+            return x
+            
+        # Split 6: After fc1 block
+        x = F.relu(self.fc1(x))
+        x = self.dropout(x)
+        if self.split_layer == 6:
+            return x
+            
+        # Split 7: After fc2
+        x = F.relu(self.fc2(x))
+        if self.split_layer == 7:
+            return x
+            
+        # Split 8: After fc3
+        x = F.relu(self.fc3(x))
+        if self.split_layer == 8:
+            return x
+            
+        # Split 9: After fc4
+        x = F.relu(self.fc4(x))
+        if self.split_layer == 9:
+            return x
+            
+        # If split_layer > 9, return full output
+        x = F.relu(self.fc5(x))
+        x = self.fc6(x)
+        return x
+
+    def _forward_server(self, x):
+        # Input x is the output from client
+        
+        if self.split_layer == 1:
+            # Client did conv1. Server starts at pool1.
+            x = self.pool(x)
+            x = F.relu(self.bn2(self.conv2(x)))
+            x = self.pool(x)
+            x = F.relu(self.bn3(self.conv3(x)))
+            x = self.pool(x)
+            x = x.view(x.size(0), -1)
+            x = F.relu(self.fc1(x))
+            x = self.dropout(x)
+            x = F.relu(self.fc2(x))
+            x = F.relu(self.fc3(x))
+            x = F.relu(self.fc4(x))
+            x = F.relu(self.fc5(x))
+            x = self.fc6(x)
+            return x
+            
+        if self.split_layer == 2:
+            # Client did pool1. Server starts at conv2.
+            x = F.relu(self.bn2(self.conv2(x)))
+            x = self.pool(x)
+            x = F.relu(self.bn3(self.conv3(x)))
+            x = self.pool(x)
+            x = x.view(x.size(0), -1)
+            x = F.relu(self.fc1(x))
+            x = self.dropout(x)
+            x = F.relu(self.fc2(x))
+            x = F.relu(self.fc3(x))
+            x = F.relu(self.fc4(x))
+            x = F.relu(self.fc5(x))
+            x = self.fc6(x)
+            return x
+            
+        if self.split_layer == 3:
+            # Client did conv2. Server starts at pool2.
+            x = self.pool(x)
+            x = F.relu(self.bn3(self.conv3(x)))
+            x = self.pool(x)
+            x = x.view(x.size(0), -1)
+            x = F.relu(self.fc1(x))
+            x = self.dropout(x)
+            x = F.relu(self.fc2(x))
+            x = F.relu(self.fc3(x))
+            x = F.relu(self.fc4(x))
+            x = F.relu(self.fc5(x))
+            x = self.fc6(x)
+            return x
+            
+        if self.split_layer == 4:
+            # Client did pool2. Server starts at conv3.
+            x = F.relu(self.bn3(self.conv3(x)))
+            x = self.pool(x)
+            x = x.view(x.size(0), -1)
+            x = F.relu(self.fc1(x))
+            x = self.dropout(x)
+            x = F.relu(self.fc2(x))
+            x = F.relu(self.fc3(x))
+            x = F.relu(self.fc4(x))
+            x = F.relu(self.fc5(x))
+            x = self.fc6(x)
+            return x
+            
+        if self.split_layer == 5:
+            # Client did flatten. Server starts at fc1.
+            x = F.relu(self.fc1(x))
+            x = self.dropout(x)
+            x = F.relu(self.fc2(x))
+            x = F.relu(self.fc3(x))
+            x = F.relu(self.fc4(x))
+            x = F.relu(self.fc5(x))
+            x = self.fc6(x)
+            return x
+            
+        if self.split_layer == 6:
+            # Client did fc1. Server starts at fc2.
+            x = F.relu(self.fc2(x))
+            x = F.relu(self.fc3(x))
+            x = F.relu(self.fc4(x))
+            x = F.relu(self.fc5(x))
+            x = self.fc6(x)
+            return x
+            
+        if self.split_layer == 7:
+            # Client did fc2. Server starts at fc3.
+            x = F.relu(self.fc3(x))
+            x = F.relu(self.fc4(x))
+            x = F.relu(self.fc5(x))
+            x = self.fc6(x)
+            return x
+            
+        if self.split_layer == 8:
+            # Client did fc3. Server starts at fc4.
+            x = F.relu(self.fc4(x))
+            x = F.relu(self.fc5(x))
+            x = self.fc6(x)
+            return x
+            
+        if self.split_layer == 9:
+            # Client did fc4. Server starts at fc5.
+            x = F.relu(self.fc5(x))
+            x = self.fc6(x)
+            return x
+            
+        return x
+
+
+
+
+
+
+class CNNModel(nn.Module):
+    """
+    Alternative CNN architecture for CIFAR-10.
+    Simpler than ResNet but more complex than SimpleMNISTCNN.
+    """
+    def __init__(self, num_classes=10):
+        super(CNNModel, self).__init__()
+        
+        # Convolutional layers
+        self.conv1 = nn.Conv2d(3, 32, kernel_size=3, padding=1)
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
+        self.conv3 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
+        
+        self.pool = nn.MaxPool2d(2, 2)
+        self.dropout = nn.Dropout(0.25)
+        
+        # Fully connected layers
+        self.fc1 = nn.Linear(128 * 4 * 4, 256)
+        self.fc2 = nn.Linear(256, 128)
+        self.fc3 = nn.Linear(128, num_classes)
+    
+    def forward(self, x):
+        # Conv block 1
+        x = self.pool(F.relu(self.conv1(x)))
+        
+        # Conv block 2
+        x = self.pool(F.relu(self.conv2(x)))
+        
+        # Conv block 3
+        x = self.pool(F.relu(self.conv3(x)))
+        
+        # Flatten
+        x = x.view(-1, 128 * 4 * 4)
+        
+        # FC layers
+        x = F.relu(self.fc1(x))
+        x = self.dropout(x)
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
+        
+        return x
+
+
+
+
+
+class SimpleNN(nn.Module):
+    """
+    Simple feedforward neural network.
+    Can be used for both MNIST and CIFAR-10 with appropriate input size.
+    """
+    def __init__(self, input_size=3072, num_classes=10):
+        super(SimpleNN, self).__init__()
+        
+        self.fc1 = nn.Linear(input_size, 512)
+        self.fc2 = nn.Linear(512, 256)
+        self.fc3 = nn.Linear(256, 128)
+        self.fc4 = nn.Linear(128, num_classes)
+        
+        self.dropout = nn.Dropout(0.3)
+    
+    def forward(self, x):
+        # Flatten input
+        x = x.view(x.size(0), -1)
+        
+        # FC layers with ReLU and dropout
+        x = F.relu(self.fc1(x))
+        x = self.dropout(x)
+        x = F.relu(self.fc2(x))
+        x = self.dropout(x)
+        x = F.relu(self.fc3(x))
+        x = self.fc4(x)
+        
+        return x
+
+
+# Test function
+
+
+# ============================================================================
+# ResNet50 Architecture
+# ============================================================================
+
+"""
+Advanced Neural Network Architectures for Federated Split Learning
+
+This module contains multiple CNN architectures for federated learning experiments:
+1. CNN - SimpleMNISTCNN/ResNetFed (existing)
+2. ResNet50 - Deep residual network with bottleneck blocks
+3. MobileNetV4 - Efficient mobile architecture
+4. ConvNeXt - Modern CNN inspired by vision transformers
+
+All models support split learning with configurable split points.
+"""
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+
+# ============================================================================
+# ResNet50 Architecture
+# ============================================================================
+
+
+
+class Bottleneck(nn.Module):
+    """Bottleneck block for ResNet50 (1x1 -> 3x3 -> 1x1 convolutions)"""
+    expansion = 4
+    
+    def __init__(self, in_channels, out_channels, stride=1, downsample=None):
+        super(Bottleneck, self).__init__()
+        
+        # 1x1 conv
+        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(out_channels)
+        
+        # 3x3 conv
+        self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, 
+                               stride=stride, padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(out_channels)
+        
+        # 1x1 conv (expansion)
+        self.conv3 = nn.Conv2d(out_channels, out_channels * self.expansion, 
+                               kernel_size=1, bias=False)
+        self.bn3 = nn.BatchNorm2d(out_channels * self.expansion)
+        
+        self.relu = nn.ReLU(inplace=True)
+        self.downsample = downsample
+        
+    def forward(self, x):
+        identity = x
+        
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+        
+        out = self.conv2(out)
+        out = self.bn2(out)
+        out = self.relu(out)
+        
+        out = self.conv3(out)
+        out = self.bn3(out)
+        
+        if self.downsample is not None:
+            identity = self.downsample(x)
+        
+        out += identity
+        out = self.relu(out)
+        
+        return out
+
+
+
+
+class ResNet50(nn.Module):
+    """
+    ResNet50 architecture adapted for CIFAR-like datasets (32x32 or 28x28).
+    Supports split learning with 10 configurable split points.
+    """
+    def __init__(self, num_classes=10, input_channels=3):
+        super(ResNet50, self).__init__()
+        
+        self.in_channels = 64
+        
+        # Initial convolution (adapted for small images)
+        if input_channels == 1:  # MNIST/FMNIST
+            self.conv1 = nn.Conv2d(1, 64, kernel_size=3, stride=1, padding=1, bias=False)
+        else:  # CIFAR
+            self.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
+        
+        self.bn1 = nn.BatchNorm2d(64)
+        self.relu = nn.ReLU(inplace=True)
+        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+        
+        # ResNet stages: [3, 4, 6, 3] blocks per stage
+        self.layer1 = self._make_layer(64, 3, stride=1)    # 3 blocks
+        self.layer2 = self._make_layer(128, 4, stride=2)   # 4 blocks
+        self.layer3 = self._make_layer(256, 6, stride=2)   # 6 blocks  
+        self.layer4 = self._make_layer(512, 3, stride=2)   # 3 blocks
+        
+        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+        self.fc = nn.Linear(512 * Bottleneck.expansion, num_classes)
+        
+        # Split learning configuration
+        self.split_mode = 'full'  # 'full', 'client', 'server'
+        self.split_layer = None
+        
+        # Initialize weights
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+            elif isinstance(m, nn.BatchNorm2d):
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
+    
+    def _make_layer(self, out_channels, blocks, stride=1):
+        """Create a ResNet layer with multiple bottleneck blocks"""
+        downsample = None
+        if stride != 1 or self.in_channels != out_channels * Bottleneck.expansion:
+            downsample = nn.Sequential(
+                nn.Conv2d(self.in_channels, out_channels * Bottleneck.expansion,
+                         kernel_size=1, stride=stride, bias=False),
+                nn.BatchNorm2d(out_channels * Bottleneck.expansion)
+            )
+        
+        layers = []
+        layers.append(Bottleneck(self.in_channels, out_channels, stride, downsample))
+        self.in_channels = out_channels * Bottleneck.expansion
+        
+        for _ in range(1, blocks):
+            layers.append(Bottleneck(self.in_channels, out_channels))
+        
+        return nn.Sequential(*layers)
+    
+    def configure_split(self, mode, split_layer):
+        """Configure split learning mode and layer"""
+        self.split_mode = mode
+        self.split_layer = split_layer
+    
+    def forward(self, x):
+        if self.split_mode == 'full':
+            return self._forward_full(x)
+        elif self.split_mode == 'client':
+            return self._forward_client(x)
+        elif self.split_mode == 'server':
+            return self._forward_server(x)
+    
+    def _forward_full(self, x):
+        """Full forward pass"""
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        x = self.maxpool(x)
+        
+        x = self.layer1(x)
+        x = self.layer2(x)
+        x = self.layer3(x)
+        x = self.layer4(x)
+        
+        x = self.avgpool(x)
+        x = torch.flatten(x, 1)
+        x = self.fc(x)
+        
+        return x
+    
+    def _forward_client(self, x):
+        """Client-side forward pass up to split point"""
+        # Initial layers
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        x = self.maxpool(x)
+        
+        # Split points mapping:
+        # 5: After layer1 block 1
+        # 6: After layer1 (complete)
+        # 7: After layer2 block 2
+        # 8: After layer2 (complete)
+        # 9: After layer3 block 2
+        # 10: After layer3 block 4
+        # 11: After layer3 (complete)
+        # 12: After layer4 block 1
+        # 13: After layer4 block 2
+        # 14: After layer4 (complete)
+        
+        if self.split_layer <= 5:
+            x = self.layer1[0](x)
+            return x
+        
+        if self.split_layer == 6:
+            x = self.layer1(x)
+            return x
+        
+        x = self.layer1(x)
+        
+        if self.split_layer == 7:
+            x = self.layer2[0](x)
+            x = self.layer2[1](x)
+            return x
+        
+        if self.split_layer == 8:
+            x = self.layer2(x)
+            return x
+        
+        x = self.layer2(x)
+        
+        if self.split_layer == 9:
+            x = self.layer3[0](x)
+            x = self.layer3[1](x)
+            return x
+        
+        if self.split_layer == 10:
+            x = self.layer3[0](x)
+            x = self.layer3[1](x)
+            x = self.layer3[2](x)
+            x = self.layer3[3](x)
+            return x
+        
+        if self.split_layer == 11:
+            x = self.layer3(x)
+            return x
+        
+        x = self.layer3(x)
+        
+        if self.split_layer == 12:
+            x = self.layer4[0](x)
+            return x
+        
+        if self.split_layer == 13:
+            x = self.layer4[0](x)
+            x = self.layer4[1](x)
+            return x
+        
+        # split_layer >= 14
+        x = self.layer4(x)
+        return x
+    
+    def _forward_server(self, x):
+        """Server-side forward pass from split point"""
+        # Continue from where client left off
+        if self.split_layer <= 5:
+            x = self.layer1[1](x)
+            x = self.layer1[2](x)
+            x = self.layer2(x)
+            x = self.layer3(x)
+            x = self.layer4(x)
+        elif self.split_layer == 6:
+            x = self.layer2(x)
+            x = self.layer3(x)
+            x = self.layer4(x)
+        elif self.split_layer == 7:
+            x = self.layer2[2](x)
+            x = self.layer2[3](x)
+            x = self.layer3(x)
+            x = self.layer4(x)
+        elif self.split_layer == 8:
+            x = self.layer3(x)
+            x = self.layer4(x)
+        elif self.split_layer == 9:
+            x = self.layer3[2](x)
+            x = self.layer3[3](x)
+            x = self.layer3[4](x)
+            x = self.layer3[5](x)
+            x = self.layer4(x)
+        elif self.split_layer == 10:
+            x = self.layer3[4](x)
+            x = self.layer3[5](x)
+            x = self.layer4(x)
+        elif self.split_layer == 11:
+            x = self.layer4(x)
+        elif self.split_layer == 12:
+            x = self.layer4[1](x)
+            x = self.layer4[2](x)
+        elif self.split_layer == 13:
+            x = self.layer4[2](x)
+        # else split_layer == 14, continue from layer4 output
+        
+        x = self.avgpool(x)
+        x = torch.flatten(x, 1)
+        x = self.fc(x)
+        
+        return x
+
+
+# Test function
+
+# ============================================================================
+# MobileNetV4 Architecture
+# ============================================================================
+
+"""
+MobileNetV4 Architecture for Federated Split Learning
+
+Efficient mobile architecture with inverted residual blocks and squeeze-excitation.
+Adapted for CIFAR-10/100 and MNIST/FMNIST datasets.
+"""
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+
+
+
+class SqueezeExcitation(nn.Module):
+    """Squeeze-and-Excitation block"""
+    def __init__(self, channels, reduction=4):
+        super(SqueezeExcitation, self).__init__()
+        self.avgpool = nn.AdaptiveAvgPool2d(1)
+        self.fc1 = nn.Linear(channels, channels // reduction)
+        self.fc2 = nn.Linear(channels // reduction, channels)
+        
+    def forward(self, x):
+        b, c, _, _ = x.size()
+        y = self.avgpool(x).view(b, c)
+        y = F.relu(self.fc1(y))
+        y = torch.sigmoid(self.fc2(y)).view(b, c, 1, 1)
+        return x * y
+
+
+
+
+class InvertedResidual(nn.Module):
+    """Inverted Residual Block (MBConv)"""
+    def __init__(self, in_channels, out_channels, stride, expand_ratio, use_se=True):
+        super(InvertedResidual, self).__init__()
+        self.stride = stride
+        self.use_residual = (stride == 1 and in_channels == out_channels)
+        
+        hidden_dim = in_channels * expand_ratio
+        
+        layers = []
+        # Expansion
+        if expand_ratio != 1:
+            layers.append(nn.Conv2d(in_channels, hidden_dim, 1, bias=False))
+            layers.append(nn.BatchNorm2d(hidden_dim))
+            layers.append(nn.ReLU6(inplace=True))
+        
+        # Depthwise
+        layers.extend([
+            nn.Conv2d(hidden_dim, hidden_dim, 3, stride=stride, padding=1, 
+                     groups=hidden_dim, bias=False),
+            nn.BatchNorm2d(hidden_dim),
+            nn.ReLU6(inplace=True)
+        ])
+        
+        # Squeeze-and-Excitation
+        if use_se:
+            layers.append(SqueezeExcitation(hidden_dim))
+        
+        # Projection
+        layers.extend([
+            nn.Conv2d(hidden_dim, out_channels, 1, bias=False),
+            nn.BatchNorm2d(out_channels)
+        ])
+        
+        self.conv = nn.Sequential(*layers)
+        
+    def forward(self, x):
+        if self.use_residual:
+            return x + self.conv(x)
+        else:
+            return self.conv(x)
+
+
+
+
+class MobileNetV4(nn.Module):
+    """
+    MobileNetV4 architecture adapted for small images (32x32 or 28x28).
+    Supports split learning with 10 configurable split points.
+    """
+    def __init__(self, num_classes=10, input_channels=3, width_mult=1.0):
+        super(MobileNetV4, self).__init__()
+        
+        # Building blocks: [expansion, out_channels, num_blocks, stride]
+        config = [
+            [1, 16, 1, 1],   # Stage 1
+            [6, 24, 2, 2],   # Stage 2
+            [6, 32, 3, 2],   # Stage 3
+  [6, 64, 4, 2],   # Stage 4
+            [6, 96, 3, 1],   # Stage 5
+            [6, 160, 3, 2],  # Stage 6
+            [6, 320, 1, 1],  # Stage 7
+        ]
+        
+        # Adjust channels based on width multiplier
+        input_channel = int(32 * width_mult)
+        
+        # Initial convolution
+        self.features = [nn.Sequential(
+            nn.Conv2d(input_channels, input_channel, 3, stride=1, padding=1, bias=False),
+            nn.BatchNorm2d(input_channel),
+            nn.ReLU6(inplace=True)
+        )]
+        
+        # Build inverted residual blocks
+        for t, c, n, s in config:
+            output_channel = int(c * width_mult)
+            for i in range(n):
+                stride = s if i == 0 else 1
+                self.features.append(
+                    InvertedResidual(input_channel, output_channel, stride, t)
+                )
+                input_channel = output_channel
+        
+        # Final convolution
+        self.features.append(nn.Sequential(
+            nn.Conv2d(input_channel, 1280, 1, bias=False),
+            nn.BatchNorm2d(1280),
+            nn.ReLU6(inplace=True)
+        ))
+        
+        self.features = nn.Sequential(*self.features)
+        
+        # Classifier
+        self.avgpool = nn.AdaptiveAvgPool2d(1)
+        self.classifier = nn.Linear(1280, num_classes)
+        
+        # Split learning configuration
+        self.split_mode = 'full'
+        self.split_layer = None
+        
+        # Initialize weights
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out')
+                if m.bias is not None:
+                    nn.init.zeros_(m.bias)
+            elif isinstance(m, nn.BatchNorm2d):
+                nn.init.ones_(m.weight)
+                nn.init.zeros_(m.bias)
+            elif isinstance(m, nn.Linear):
+                nn.init.normal_(m.weight, 0, 0.01)
+                nn.init.zeros_(m.bias)
+    
+    def configure_split(self, mode, split_layer):
+        """Configure split learning mode and layer"""
+        self.split_mode = mode
+        self.split_layer = split_layer
+    
+    def forward(self, x):
+        if self.split_mode == 'full':
+            return self._forward_full(x)
+        elif self.split_mode == 'client':
+            return self._forward_client(x)
+        elif self.split_mode == 'server':
+            return self._forward_server(x)
+    
+    def _forward_full(self, x):
+        """Full forward pass"""
+        x = self.features(x)
+        x = self.avgpool(x)
+        x = torch.flatten(x, 1)
+        x = self.classifier(x)
+        return x
+    
+    def _forward_client(self, x):
+        """Client-side forward pass up to split point"""
+        # Split points distributed across the network
+        # Total ~18 feature blocks
+        split_indices = [2, 4, 6, 8, 10, 12, 14, 16, 18, 19]
+        split_idx = split_indices[self.split_layer - 5]
+        
+        for i in range(min(split_idx, len(self.features))):
+            x = self.features[i](x)
+        return x
+    
+    def _forward_server(self, x):
+        """Server-side forward pass from split point"""
+        split_indices = [2, 4, 6, 8, 10, 12, 14, 16, 18, 19]
+        split_idx = split_indices[self.split_layer - 5]
+        
+        for i in range(split_idx, len(self.features)):
+            x = self.features[i](x)
+        
+        x = self.avgpool(x)
+        x = torch.flatten(x, 1)
+        x = self.classifier(x)
+        return x
+
+
+# Test
+
+# ============================================================================
+# ConvNeXt Architecture
+# ============================================================================
+
+"""
+ConvNeXt Architecture for Federated Split Learning
+
+Modern CNN inspired by vision transformers with large kernels and LayerNorm.
+Adapted for CIFAR-10/100 and MNIST/FMNIST datasets.
+"""
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+
+
+
+class ConvNeXtBlock(nn.Module):
+    """ConvNeXt Block with large kernel depthwise conv"""
+    def __init__(self, dim, drop_path=0., layer_scale_init_value=1e-6):
+        super().__init__()
+        self.dwconv = nn.Conv2d(dim, dim, kernel_size=7, padding=3, groups=dim)
+        self.norm = nn.LayerNorm(dim, eps=1e-6)
+        self.pwconv1 = nn.Linear(dim, 4 * dim)
+        self.act = nn.GELU()
+        self.pwconv2 = nn.Linear(4 * dim, dim)
+        self.gamma = nn.Parameter(layer_scale_init_value * torch.ones((dim)), 
+                                   requires_grad=True) if layer_scale_init_value > 0 else None
+        
+    def forward(self, x):
+        input = x
+        x = self.dwconv(x)
+        x = x.permute(0, 2, 3, 1)  # (N, C, H, W) -> (N, H, W, C)
+        x = self.norm(x)
+        x = self.pwconv1(x)
+        x = self.act(x)
+        x = self.pwconv2(x)
+        if self.gamma is not None:
+            x = self.gamma * x
+        x = x.permute(0, 3, 1, 2)  # (N, H, W, C) -> (N, C, H, W)
+        
+        x = input + x
+        return x
+
+
+
+
+class ConvNeXt(nn.Module):
+    """
+    ConvNeXt-Tiny architecture adapted for small images (32x32 or 28x28).
+    Supports split learning with 10 configurable split points.
+    
+    Block configuration: [3, 3, 9, 3] for Tiny variant
+    """
+    def __init__(self, num_classes=10, input_channels=3, depths=[3, 3, 9, 3], 
+                 dims=[96, 192, 384, 768]):
+        super().__init__()
+        
+        # Stem - patchify with 4x4 conv (stride 4 -> 2 for small images)
+        self.downsample_layers = nn.ModuleList()
+        stem = nn.Sequential(
+            nn.Conv2d(input_channels, dims[0], kernel_size=4, stride=2, padding=1),
+            nn.BatchNorm2d(dims[0])
+        )
+        self.downsample_layers.append(stem)
+        
+        # Downsampling layers between stages
+        for i in range(3):
+            downsample_layer = nn.Sequential(
+                nn.BatchNorm2d(dims[i]),
+                nn.Conv2d(dims[i], dims[i+1], kernel_size=2, stride=2),
+            )
+            self.downsample_layers.append(downsample_layer)
+        
+        # 4 feature resolution stages
+        self.stages = nn.ModuleList()
+        for i in range(4):
+            stage = nn.Sequential(
+                *[ConvNeXtBlock(dim=dims[i]) for _ in range(depths[i])]
+            )
+            self.stages.append(stage)
+        
+        # Head
+        self.norm = nn.LayerNorm(dims[-1])
+        self.head = nn.Linear(dims[-1], num_classes)
+        
+        # Split learning configuration
+        self.split_mode = 'full'
+        self.split_layer = None
+        
+        # Initialize weights
+        self.apply(self._init_weights)
+        
+    def _init_weights(self, m):
+        if isinstance(m, (nn.Conv2d, nn.Linear)):
+            nn.init.trunc_normal_(m.weight, std=0.02)
+            if m.bias is not None:
+                nn.init.constant_(m.bias, 0)
+    
+    def configure_split(self, mode, split_layer):
+        """Configure split learning mode and layer"""
+        self.split_mode = mode
+        self.split_layer = split_layer
+    
+    def forward(self, x):
+        if self.split_mode == 'full':
+            return self._forward_full(x)
+        elif self.split_mode == 'client':
+            return self._forward_client(x)
+        elif self.split_mode == 'server':
+            return self._forward_server(x)
+    
+    def _forward_full(self, x):
+        """Full forward pass"""
+        for i in range(4):
+            x = self.downsample_layers[i](x)
+            x = self.stages[i](x)
+        
+        x = x.mean([-2, -1])  # Global average pooling
+        x = self.norm(x)
+        x = self.head(x)
+        return x
+    
+    def _forward_client(self, x):
+        """Client-side forward pass up to split point"""
+        # Split points distributed across stages:
+        # Stage 0: 3 blocks, Stage 1: 3 blocks, Stage 2: 9 blocks, Stage 3: 3 blocks
+        # 5: After stage 0 block 1
+        # 6: After stage 0 (complete)
+        # 7: After stage 1 block 1
+        # 8: After stage 1 (complete)
+        # 9: After stage 2 block 3
+        # 10: After stage 2 block 6
+        # 11: After stage 2 (complete)
+        # 12: After stage 3 block 1
+        # 13: After stage 3 block 2
+        # 14: After stage 3 (complete)
+        
+        x = self.downsample_layers[0](x)
+        
+        # Stage 0 (3 blocks)
+        if self.split_layer == 5:
+            x = self.stages[0][0](x)
+            return x
+        
+        x = self.stages[0](x)
+        if self.split_layer == 6:
+            return x
+        
+        x = self.downsample_layers[1](x)
+        
+        # Stage 1 (3 blocks)
+        if self.split_layer == 7:
+            x = self.stages[1][0](x)
+            return x
+        
+        x = self.stages[1](x)
+        if self.split_layer == 8:
+            return x
+        
+        x = self.downsample_layers[2](x)
+        
+        # Stage 2 (9 blocks)
+        if self.split_layer == 9:
+            for i in range(3):
+                x = self.stages[2][i](x)
+            return x
+        
+        if self.split_layer == 10:
+            for i in range(6):
+                x = self.stages[2][i](x)
+            return x
+        
+        x = self.stages[2](x)
+        if self.split_layer == 11:
+            return x
+        
+        x = self.downsample_layers[3](x)
+        
+        # Stage 3 (3 blocks)
+        if self.split_layer == 12:
+            x = self.stages[3][0](x)
+            return x
+        
+        if self.split_layer == 13:
+            x = self.stages[3][0](x)
+            x = self.stages[3][1](x)
+            return x
+        
+        # split_layer == 14
+        x = self.stages[3](x)
+        return x
+    
+    def _forward_server(self, x):
+        """Server-side forward pass from split point"""
+        if self.split_layer == 5:
+            x = self.stages[0][1](x)
+            x = self.stages[0][2](x)
+            x = self.downsample_layers[1](x)
+            x = self.stages[1](x)
+            x = self.downsample_layers[2](x)
+            x = self.stages[2](x)
+            x = self.downsample_layers[3](x)
+            x = self.stages[3](x)
+        elif self.split_layer == 6:
+            x = self.downsample_layers[1](x)
+            x = self.stages[1](x)
+            x = self.downsample_layers[2](x)
+            x = self.stages[2](x)
+            x = self.downsample_layers[3](x)
+            x = self.stages[3](x)
+        elif self.split_layer == 7:
+            x = self.stages[1][1](x)
+            x = self.stages[1][2](x)
+            x = self.downsample_layers[2](x)
+            x = self.stages[2](x)
+            x = self.downsample_layers[3](x)
+            x = self.stages[3](x)
+        elif self.split_layer == 8:
+            x = self.downsample_layers[2](x)
+            x = self.stages[2](x)
+            x = self.downsample_layers[3](x)
+            x = self.stages[3](x)
+        elif self.split_layer == 9:
+            for i in range(3, 9):
+                x = self.stages[2][i](x)
+            x = self.downsample_layers[3](x)
+            x = self.stages[3](x)
+        elif self.split_layer == 10:
+            for i in range(6, 9):
+                x = self.stages[2][i](x)
+            x = self.downsample_layers[3](x)
+            x = self.stages[3](x)
+        elif self.split_layer == 11:
+            x = self.downsample_layers[3](x)
+            x = self.stages[3](x)
+        elif self.split_layer == 12:
+            x = self.stages[3][1](x)
+            x = self.stages[3][2](x)
+        elif self.split_layer == 13:
+            x = self.stages[3][2](x)
+        # else split_layer == 14, x is already after stage 3
+        
+        x = x.mean([-2, -1])  # Global average pooling
+        x = self.norm(x)
+        x = self.head(x)
+        return x
+
+
+# Test
+
+
+# ============================================================================
+# Model Selection Helper
+# ============================================================================
+
+def get_model_by_choice(choice, num_classes, input_channels):
+    """
+    Get model instance based on user choice.
+    
+    Args:
+        choice: Model number (1-4)
+        num_classes: Number of output classes
+        input_channels: Number of input channels (1 for grayscale, 3 for RGB)
+    
+    Returns:
+        model: Selected model instance
+        model_name: Name of the model
+    """
+    if choice == 1:
+        # CNN (baseline)
+        model = SimpleMNISTCNN(num_classes=num_classes)
+        return model, "CNN"
+    elif choice == 2:
+        # ResNet50
+        model = ResNet50(num_classes=num_classes, input_channels=input_channels)
+        return model, "ResNet50"
+    elif choice == 3:
+        # MobileNetV4
+        model = MobileNetV4(num_classes=num_classes, input_channels=input_channels)
+        return model, "MobileNetV4"
+    elif choice == 4:
+        # ConvNeXt
+        model = ConvNeXt(num_classes=num_classes, input_channels=input_channels)
+        return model, "ConvNeXt"
+    else:
+        raise ValueError(f"Invalid model choice: {choice}. Must be 1-4.")
+
+
+# ============================================================================
+# ResNet50 Architecture
+# ============================================================================
+
+"""
+Advanced Neural Network Architectures for Federated Split Learning
+
+This module contains multiple CNN architectures for federated learning experiments:
+1. CNN - SimpleMNISTCNN/ResNetFed (existing)
+2. ResNet50 - Deep residual network with bottleneck blocks
+3. MobileNetV4 - Efficient mobile architecture
+4. ConvNeXt - Modern CNN inspired by vision transformers
+
+All models support split learning with configurable split points.
+"""
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+
+# ============================================================================
+# ResNet50 Architecture
+# ============================================================================
+
+
+class Bottleneck(nn.Module):
+    """Bottleneck block for ResNet50 (1x1 -> 3x3 -> 1x1 convolutions)"""
+    expansion = 4
+    
+    def __init__(self, in_channels, out_channels, stride=1, downsample=None):
+        super(Bottleneck, self).__init__()
+        
+        # 1x1 conv
+        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(out_channels)
+        
+        # 3x3 conv
+        self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, 
+                               stride=stride, padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(out_channels)
+        
+        # 1x1 conv (expansion)
+        self.conv3 = nn.Conv2d(out_channels, out_channels * self.expansion, 
+                               kernel_size=1, bias=False)
+        self.bn3 = nn.BatchNorm2d(out_channels * self.expansion)
+        
+        self.relu = nn.ReLU(inplace=True)
+        self.downsample = downsample
+        
+    def forward(self, x):
+        identity = x
+        
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+        
+        out = self.conv2(out)
+        out = self.bn2(out)
+        out = self.relu(out)
+        
+        out = self.conv3(out)
+        out = self.bn3(out)
+        
+        if self.downsample is not None:
+            identity = self.downsample(x)
+        
+        out += identity
+        out = self.relu(out)
+        
+        return out
+
+
+
+class ResNet50(nn.Module):
+    """
+    ResNet50 architecture adapted for CIFAR-like datasets (32x32 or 28x28).
+    Supports split learning with 10 configurable split points.
+    """
+    def __init__(self, num_classes=10, input_channels=3):
+        super(ResNet50, self).__init__()
+        
+        self.in_channels = 64
+        
+        # Initial convolution (adapted for small images)
+        if input_channels == 1:  # MNIST/FMNIST
+            self.conv1 = nn.Conv2d(1, 64, kernel_size=3, stride=1, padding=1, bias=False)
+        else:  # CIFAR
+            self.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
+        
+        self.bn1 = nn.BatchNorm2d(64)
+        self.relu = nn.ReLU(inplace=True)
+        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+        
+        # ResNet stages: [3, 4, 6, 3] blocks per stage
+        self.layer1 = self._make_layer(64, 3, stride=1)    # 3 blocks
+        self.layer2 = self._make_layer(128, 4, stride=2)   # 4 blocks
+        self.layer3 = self._make_layer(256, 6, stride=2)   # 6 blocks  
+        self.layer4 = self._make_layer(512, 3, stride=2)   # 3 blocks
+        
+        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+        self.fc = nn.Linear(512 * Bottleneck.expansion, num_classes)
+        
+        # Split learning configuration
+        self.split_mode = 'full'  # 'full', 'client', 'server'
+        self.split_layer = None
+        
+        # Initialize weights
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+            elif isinstance(m, nn.BatchNorm2d):
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
+    
+    def _make_layer(self, out_channels, blocks, stride=1):
+        """Create a ResNet layer with multiple bottleneck blocks"""
+        downsample = None
+        if stride != 1 or self.in_channels != out_channels * Bottleneck.expansion:
+            downsample = nn.Sequential(
+                nn.Conv2d(self.in_channels, out_channels * Bottleneck.expansion,
+                         kernel_size=1, stride=stride, bias=False),
+                nn.BatchNorm2d(out_channels * Bottleneck.expansion)
+            )
+        
+        layers = []
+        layers.append(Bottleneck(self.in_channels, out_channels, stride, downsample))
+        self.in_channels = out_channels * Bottleneck.expansion
+        
+        for _ in range(1, blocks):
+            layers.append(Bottleneck(self.in_channels, out_channels))
+        
+        return nn.Sequential(*layers)
+    
+    def configure_split(self, mode, split_layer):
+        """Configure split learning mode and layer"""
+        self.split_mode = mode
+        self.split_layer = split_layer
+    
+    def forward(self, x):
+        if self.split_mode == 'full':
+            return self._forward_full(x)
+        elif self.split_mode == 'client':
+            return self._forward_client(x)
+        elif self.split_mode == 'server':
+            return self._forward_server(x)
+    
+    def _forward_full(self, x):
+        """Full forward pass"""
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        x = self.maxpool(x)
+        
+        x = self.layer1(x)
+        x = self.layer2(x)
+        x = self.layer3(x)
+        x = self.layer4(x)
+        
+        x = self.avgpool(x)
+        x = torch.flatten(x, 1)
+        x = self.fc(x)
+        
+        return x
+    
+    def _forward_client(self, x):
+        """Client-side forward pass up to split point"""
+        # Initial layers
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        x = self.maxpool(x)
+        
+        # Split points mapping:
+        # 5: After layer1 block 1
+        # 6: After layer1 (complete)
+        # 7: After layer2 block 2
+        # 8: After layer2 (complete)
+        # 9: After layer3 block 2
+        # 10: After layer3 block 4
+        # 11: After layer3 (complete)
+        # 12: After layer4 block 1
+        # 13: After layer4 block 2
+        # 14: After layer4 (complete)
+        
+        if self.split_layer <= 5:
+            x = self.layer1[0](x)
+            return x
+        
+        if self.split_layer == 6:
+            x = self.layer1(x)
+            return x
+        
+        x = self.layer1(x)
+        
+        if self.split_layer == 7:
+            x = self.layer2[0](x)
+            x = self.layer2[1](x)
+            return x
+        
+        if self.split_layer == 8:
+            x = self.layer2(x)
+            return x
+        
+        x = self.layer2(x)
+        
+        if self.split_layer == 9:
+            x = self.layer3[0](x)
+            x = self.layer3[1](x)
+            return x
+        
+        if self.split_layer == 10:
+            x = self.layer3[0](x)
+            x = self.layer3[1](x)
+            x = self.layer3[2](x)
+            x = self.layer3[3](x)
+            return x
+        
+        if self.split_layer == 11:
+            x = self.layer3(x)
+            return x
+        
+        x = self.layer3(x)
+        
+        if self.split_layer == 12:
+            x = self.layer4[0](x)
+            return x
+        
+        if self.split_layer == 13:
+            x = self.layer4[0](x)
+            x = self.layer4[1](x)
+            return x
+        
+        # split_layer >= 14
+        x = self.layer4(x)
+        return x
+    
+    def _forward_server(self, x):
+        """Server-side forward pass from split point"""
+        # Continue from where client left off
+        if self.split_layer <= 5:
+            x = self.layer1[1](x)
+            x = self.layer1[2](x)
+            x = self.layer2(x)
+            x = self.layer3(x)
+            x = self.layer4(x)
+        elif self.split_layer == 6:
+            x = self.layer2(x)
+            x = self.layer3(x)
+            x = self.layer4(x)
+        elif self.split_layer == 7:
+            x = self.layer2[2](x)
+            x = self.layer2[3](x)
+            x = self.layer3(x)
+            x = self.layer4(x)
+        elif self.split_layer == 8:
+            x = self.layer3(x)
+            x = self.layer4(x)
+        elif self.split_layer == 9:
+            x = self.layer3[2](x)
+            x = self.layer3[3](x)
+            x = self.layer3[4](x)
+            x = self.layer3[5](x)
+            x = self.layer4(x)
+        elif self.split_layer == 10:
+            x = self.layer3[4](x)
+            x = self.layer3[5](x)
+            x = self.layer4(x)
+        elif self.split_layer == 11:
+            x = self.layer4(x)
+        elif self.split_layer == 12:
+            x = self.layer4[1](x)
+            x = self.layer4[2](x)
+        elif self.split_layer == 13:
+            x = self.layer4[2](x)
+        # else split_layer == 14, continue from layer4 output
+        
+        x = self.avgpool(x)
+        x = torch.flatten(x, 1)
+        x = self.fc(x)
+        
+        return x
+
+
+# Test function
+
+# ============================================================================
+# MobileNetV4 Architecture
+# ============================================================================
+
+"""
+MobileNetV4 Architecture for Federated Split Learning
+
+Efficient mobile architecture with inverted residual blocks and squeeze-excitation.
+Adapted for CIFAR-10/100 and MNIST/FMNIST datasets.
+"""
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+
+
+class SqueezeExcitation(nn.Module):
+    """Squeeze-and-Excitation block"""
+    def __init__(self, channels, reduction=4):
+        super(SqueezeExcitation, self).__init__()
+        self.avgpool = nn.AdaptiveAvgPool2d(1)
+        self.fc1 = nn.Linear(channels, channels // reduction)
+        self.fc2 = nn.Linear(channels // reduction, channels)
+        
+    def forward(self, x):
+        b, c, _, _ = x.size()
+        y = self.avgpool(x).view(b, c)
+        y = F.relu(self.fc1(y))
+        y = torch.sigmoid(self.fc2(y)).view(b, c, 1, 1)
+        return x * y
+
+
+
+class InvertedResidual(nn.Module):
+    """Inverted Residual Block (MBConv)"""
+    def __init__(self, in_channels, out_channels, stride, expand_ratio, use_se=True):
+        super(InvertedResidual, self).__init__()
+        self.stride = stride
+        self.use_residual = (stride == 1 and in_channels == out_channels)
+        
+        hidden_dim = in_channels * expand_ratio
+        
+        layers = []
+        # Expansion
+        if expand_ratio != 1:
+            layers.append(nn.Conv2d(in_channels, hidden_dim, 1, bias=False))
+            layers.append(nn.BatchNorm2d(hidden_dim))
+            layers.append(nn.ReLU6(inplace=True))
+        
+        # Depthwise
+        layers.extend([
+            nn.Conv2d(hidden_dim, hidden_dim, 3, stride=stride, padding=1, 
+                     groups=hidden_dim, bias=False),
+            nn.BatchNorm2d(hidden_dim),
+            nn.ReLU6(inplace=True)
+        ])
+        
+        # Squeeze-and-Excitation
+        if use_se:
+            layers.append(SqueezeExcitation(hidden_dim))
+        
+        # Projection
+        layers.extend([
+            nn.Conv2d(hidden_dim, out_channels, 1, bias=False),
+            nn.BatchNorm2d(out_channels)
+        ])
+        
+        self.conv = nn.Sequential(*layers)
+        
+    def forward(self, x):
+        if self.use_residual:
+            return x + self.conv(x)
+        else:
+            return self.conv(x)
+
+
+
+class MobileNetV4(nn.Module):
+    """
+    MobileNetV4 architecture adapted for small images (32x32 or 28x28).
+    Supports split learning with 10 configurable split points.
+    """
+    def __init__(self, num_classes=10, input_channels=3, width_mult=1.0):
+        super(MobileNetV4, self).__init__()
+        
+        # Building blocks: [expansion, out_channels, num_blocks, stride]
+        config = [
+            [1, 16, 1, 1],   # Stage 1
+            [6, 24, 2, 2],   # Stage 2
+            [6, 32, 3, 2],   # Stage 3
+  [6, 64, 4, 2],   # Stage 4
+            [6, 96, 3, 1],   # Stage 5
+            [6, 160, 3, 2],  # Stage 6
+            [6, 320, 1, 1],  # Stage 7
+        ]
+        
+        # Adjust channels based on width multiplier
+        input_channel = int(32 * width_mult)
+        
+        # Initial convolution
+        self.features = [nn.Sequential(
+            nn.Conv2d(input_channels, input_channel, 3, stride=1, padding=1, bias=False),
+            nn.BatchNorm2d(input_channel),
+            nn.ReLU6(inplace=True)
+        )]
+        
+        # Build inverted residual blocks
+        for t, c, n, s in config:
+            output_channel = int(c * width_mult)
+            for i in range(n):
+                stride = s if i == 0 else 1
+                self.features.append(
+                    InvertedResidual(input_channel, output_channel, stride, t)
+                )
+                input_channel = output_channel
+        
+        # Final convolution
+        self.features.append(nn.Sequential(
+            nn.Conv2d(input_channel, 1280, 1, bias=False),
+            nn.BatchNorm2d(1280),
+            nn.ReLU6(inplace=True)
+        ))
+        
+        self.features = nn.Sequential(*self.features)
+        
+        # Classifier
+        self.avgpool = nn.AdaptiveAvgPool2d(1)
+        self.classifier = nn.Linear(1280, num_classes)
+        
+        # Split learning configuration
+        self.split_mode = 'full'
+        self.split_layer = None
+        
+        # Initialize weights
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out')
+                if m.bias is not None:
+                    nn.init.zeros_(m.bias)
+            elif isinstance(m, nn.BatchNorm2d):
+                nn.init.ones_(m.weight)
+                nn.init.zeros_(m.bias)
+            elif isinstance(m, nn.Linear):
+                nn.init.normal_(m.weight, 0, 0.01)
+                nn.init.zeros_(m.bias)
+    
+    def is_client_layer(self, layer_name, split_layer):
+        """Determine if a layer belongs to the client side."""
+        # Initial checks
+        if 'classifier' in layer_name or 'avgpool' in layer_name:
+            return False
+            
+        # Parse features.X
+        if layer_name.startswith('features.'):
+            try:
+                parts = layer_name.split('.')
+                layer_idx = int(parts[1])
+                
+                # Get split index based on configuration
+                split_indices = [2, 4, 6, 8, 10, 12, 14, 16, 18, 19]
+                if split_layer < 5: 
+                    split_idx = split_indices[0]
+                elif split_layer > 14:
+                    split_idx = split_indices[-1]
+                else:
+                    split_idx = split_indices[split_layer - 5]
+                
+                return layer_idx < split_idx
+            except:
+                return False
+                
+        return False
+
+    def configure_split(self, mode, split_layer):
+        """Configure split learning mode and layer"""
+        self.split_mode = mode
+        self.split_layer = split_layer
+    
+    def forward(self, x):
+        if self.split_mode == 'full':
+            return self._forward_full(x)
+        elif self.split_mode == 'client':
+            return self._forward_client(x)
+        elif self.split_mode == 'server':
+            return self._forward_server(x)
+    
+    def _forward_full(self, x):
+        """Full forward pass"""
+        x = self.features(x)
+        x = self.avgpool(x)
+        x = torch.flatten(x, 1)
+        x = self.classifier(x)
+        return x
+    
+    def _forward_client(self, x):
+        """Client-side forward pass up to split point"""
+        # Split points distributed across the network
+        # Total ~18 feature blocks
+        split_indices = [2, 4, 6, 8, 10, 12, 14, 16, 18, 19]
+        split_idx = split_indices[self.split_layer - 5]
+        
+        for i in range(min(split_idx, len(self.features))):
+            x = self.features[i](x)
+        return x
+    
+    def _forward_server(self, x):
+        """Server-side forward pass from split point"""
+        split_indices = [2, 4, 6, 8, 10, 12, 14, 16, 18, 19]
+        split_idx = split_indices[self.split_layer - 5]
+        
+        for i in range(split_idx, len(self.features)):
+            x = self.features[i](x)
+        
+        x = self.avgpool(x)
+        x = torch.flatten(x, 1)
+        x = self.classifier(x)
+        return x
+
+
+# Test
+
+# ============================================================================
+# ConvNeXt Architecture
+# ============================================================================
+
+"""
+ConvNeXt Architecture for Federated Split Learning
+
+Modern CNN inspired by vision transformers with large kernels and LayerNorm.
+Adapted for CIFAR-10/100 and MNIST/FMNIST datasets.
+"""
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+
+
+class ConvNeXtBlock(nn.Module):
+    """ConvNeXt Block with large kernel depthwise conv"""
+    def __init__(self, dim, drop_path=0., layer_scale_init_value=1e-6):
+        super().__init__()
+        self.dwconv = nn.Conv2d(dim, dim, kernel_size=7, padding=3, groups=dim)
+        self.norm = nn.LayerNorm(dim, eps=1e-6)
+        self.pwconv1 = nn.Linear(dim, 4 * dim)
+        self.act = nn.GELU()
+        self.pwconv2 = nn.Linear(4 * dim, dim)
+        self.gamma = nn.Parameter(layer_scale_init_value * torch.ones((dim)), 
+                                   requires_grad=True) if layer_scale_init_value > 0 else None
+        
+    def forward(self, x):
+        input = x
+        x = self.dwconv(x)
+        x = x.permute(0, 2, 3, 1)  # (N, C, H, W) -> (N, H, W, C)
+        x = self.norm(x)
+        x = self.pwconv1(x)
+        x = self.act(x)
+        x = self.pwconv2(x)
+        if self.gamma is not None:
+            x = self.gamma * x
+        x = x.permute(0, 3, 1, 2)  # (N, H, W, C) -> (N, C, H, W)
+        
+        x = input + x
+        return x
+
+
+
+class ConvNeXt(nn.Module):
+    """
+    ConvNeXt-Tiny architecture adapted for small images (32x32 or 28x28).
+    Supports split learning with 10 configurable split points.
+    
+    Block configuration: [3, 3, 9, 3] for Tiny variant
+    """
+    def __init__(self, num_classes=10, input_channels=3, depths=[3, 3, 9, 3], 
+                 dims=[96, 192, 384, 768]):
+        super().__init__()
+        
+        # Stem - patchify with 4x4 conv (stride 4 -> 2 for small images)
+        self.downsample_layers = nn.ModuleList()
+        stem = nn.Sequential(
+            nn.Conv2d(input_channels, dims[0], kernel_size=4, stride=2, padding=1),
+            nn.BatchNorm2d(dims[0])
+        )
+        self.downsample_layers.append(stem)
+        
+        # Downsampling layers between stages
+        for i in range(3):
+            downsample_layer = nn.Sequential(
+                nn.BatchNorm2d(dims[i]),
+                nn.Conv2d(dims[i], dims[i+1], kernel_size=2, stride=2),
+            )
+            self.downsample_layers.append(downsample_layer)
+        
+        # 4 feature resolution stages
+        self.stages = nn.ModuleList()
+        for i in range(4):
+            stage = nn.Sequential(
+                *[ConvNeXtBlock(dim=dims[i]) for _ in range(depths[i])]
+            )
+            self.stages.append(stage)
+        
+        # Head
+        self.norm = nn.LayerNorm(dims[-1])
+        self.head = nn.Linear(dims[-1], num_classes)
+        
+        # Split learning configuration
+        self.split_mode = 'full'
+        self.split_layer = None
+        
+        # Initialize weights
+        self.apply(self._init_weights)
+        
+    def _init_weights(self, m):
+        if isinstance(m, (nn.Conv2d, nn.Linear)):
+            nn.init.trunc_normal_(m.weight, std=0.02)
+            if m.bias is not None:
+                nn.init.constant_(m.bias, 0)
+    
+    def is_client_layer(self, layer_name, split_layer):
+        """Determine if a layer belongs to the client side."""
+        # Head and norm are always server for supported splits
+        if 'head' in layer_name or 'norm' in layer_name:
+            if 'stages' not in layer_name and 'downsample' not in layer_name:
+                return False
+                
+        # Parse layer name
+        # downsample_layers.X
+        # stages.X.Y
+        
+        if layer_name.startswith('downsample_layers.'):
+            try:
+                parts = layer_name.split('.')
+                layer_idx = int(parts[1])
+                
+                # Logic map
+                if split_layer <= 6: limit = 0
+                elif split_layer <= 8: limit = 1
+                elif split_layer <= 11: limit = 2
+                else: limit = 3
+                
+                return layer_idx <= limit
+            except:
+                return False
+                
+        if layer_name.startswith('stages.'):
+            try:
+                parts = layer_name.split('.')
+                stage_idx = int(parts[1])
+                block_idx = int(parts[2]) if len(parts) > 2 else -1
+                
+                # Logic map
+                if split_layer == 5: # stage 0, block 0
+                    if stage_idx == 0: return block_idx <= 0
+                    return False
+                if split_layer == 6: # stage 0 all
+                    return stage_idx <= 0
+                if split_layer == 7: # stage 1, block 0
+                    if stage_idx <= 0: return True
+                    if stage_idx == 1: return block_idx <= 0
+                    return False
+                if split_layer == 8: # stage 1 all
+                    return stage_idx <= 1
+                if split_layer == 9: # stage 2, block 2 (index 2)
+                    if stage_idx <= 1: return True
+                    if stage_idx == 2: return block_idx <= 2
+                    return False
+                if split_layer == 10: # stage 2, block 5 (index 5)
+                    if stage_idx <= 1: return True
+                    if stage_idx == 2: return block_idx <= 5
+                    return False
+                if split_layer == 11: # stage 2 all
+                    return stage_idx <= 2
+                if split_layer == 12: # stage 3, block 0
+                    if stage_idx <= 2: return True
+                    if stage_idx == 3: return block_idx <= 0
+                    return False
+                if split_layer == 13: # stage 3, block 1 (index 1)
+                    if stage_idx <= 2: return True
+                    if stage_idx == 3: return block_idx <= 1
+                    return False
+                if split_layer >= 14: # stage 3 all
+                    return stage_idx <= 3
+            except:
+                return False
+                
+        return False
+
+    def configure_split(self, mode, split_layer):
+        """Configure split learning mode and layer"""
+        self.split_mode = mode
+        self.split_layer = split_layer
+    
+    def forward(self, x):
+        if self.split_mode == 'full':
+            return self._forward_full(x)
+        elif self.split_mode == 'client':
+            return self._forward_client(x)
+        elif self.split_mode == 'server':
+            return self._forward_server(x)
+    
+    def _forward_full(self, x):
+        """Full forward pass"""
+        for i in range(4):
+            x = self.downsample_layers[i](x)
+            x = self.stages[i](x)
+        
+        x = x.mean([-2, -1])  # Global average pooling
+        x = self.norm(x)
+        x = self.head(x)
+        return x
+    
+    def _forward_client(self, x):
+        """Client-side forward pass up to split point"""
+        # Split points distributed across stages:
+        # Stage 0: 3 blocks, Stage 1: 3 blocks, Stage 2: 9 blocks, Stage 3: 3 blocks
+        # 5: After stage 0 block 1
+        # 6: After stage 0 (complete)
+        # 7: After stage 1 block 1
+        # 8: After stage 1 (complete)
+        # 9: After stage 2 block 3
+        # 10: After stage 2 block 6
+        # 11: After stage 2 (complete)
+        # 12: After stage 3 block 1
+        # 13: After stage 3 block 2
+        # 14: After stage 3 (complete)
+        
+        x = self.downsample_layers[0](x)
+        
+        # Stage 0 (3 blocks)
+        if self.split_layer == 5:
+            x = self.stages[0][0](x)
+            return x
+        
+        x = self.stages[0](x)
+        if self.split_layer == 6:
+            return x
+        
+        x = self.downsample_layers[1](x)
+        
+        # Stage 1 (3 blocks)
+        if self.split_layer == 7:
+            x = self.stages[1][0](x)
+            return x
+        
+        x = self.stages[1](x)
+        if self.split_layer == 8:
+            return x
+        
+        x = self.downsample_layers[2](x)
+        
+        # Stage 2 (9 blocks)
+        if self.split_layer == 9:
+            for i in range(3):
+                x = self.stages[2][i](x)
+            return x
+        
+        if self.split_layer == 10:
+            for i in range(6):
+                x = self.stages[2][i](x)
+            return x
+        
+        x = self.stages[2](x)
+        if self.split_layer == 11:
+            return x
+        
+        x = self.downsample_layers[3](x)
+        
+        # Stage 3 (3 blocks)
+        if self.split_layer == 12:
+            x = self.stages[3][0](x)
+            return x
+        
+        if self.split_layer == 13:
+            x = self.stages[3][0](x)
+            x = self.stages[3][1](x)
+            return x
+        
+        # split_layer == 14
+        x = self.stages[3](x)
+        return x
+    
+    def _forward_server(self, x):
+        """Server-side forward pass from split point"""
+        if self.split_layer == 5:
+            x = self.stages[0][1](x)
+            x = self.stages[0][2](x)
+            x = self.downsample_layers[1](x)
+            x = self.stages[1](x)
+            x = self.downsample_layers[2](x)
+            x = self.stages[2](x)
+            x = self.downsample_layers[3](x)
+            x = self.stages[3](x)
+        elif self.split_layer == 6:
+            x = self.downsample_layers[1](x)
+            x = self.stages[1](x)
+            x = self.downsample_layers[2](x)
+            x = self.stages[2](x)
+            x = self.downsample_layers[3](x)
+            x = self.stages[3](x)
+        elif self.split_layer == 7:
+            x = self.stages[1][1](x)
+            x = self.stages[1][2](x)
+            x = self.downsample_layers[2](x)
+            x = self.stages[2](x)
+            x = self.downsample_layers[3](x)
+            x = self.stages[3](x)
+        elif self.split_layer == 8:
+            x = self.downsample_layers[2](x)
+            x = self.stages[2](x)
+            x = self.downsample_layers[3](x)
+            x = self.stages[3](x)
+        elif self.split_layer == 9:
+            for i in range(3, 9):
+                x = self.stages[2][i](x)
+            x = self.downsample_layers[3](x)
+            x = self.stages[3](x)
+        elif self.split_layer == 10:
+            for i in range(6, 9):
+                x = self.stages[2][i](x)
+            x = self.downsample_layers[3](x)
+            x = self.stages[3](x)
+        elif self.split_layer == 11:
+            x = self.downsample_layers[3](x)
+            x = self.stages[3](x)
+        elif self.split_layer == 12:
+            x = self.stages[3][1](x)
+            x = self.stages[3][2](x)
+        elif self.split_layer == 13:
+            x = self.stages[3][2](x)
+        # else split_layer == 14, x is already after stage 3
+        
+        x = x.mean([-2, -1])  # Global average pooling
+        x = self.norm(x)
+        x = self.head(x)
+        return x
+
+
+# Test
+
+
+# ============================================================================
+# Model Selection Helper
+# ============================================================================
+
+def get_model_by_choice(choice, num_classes, input_channels):
+    """
+    Get model instance based on user choice.
+    
+    Args:
+        choice: Model number (1-4)
+        num_classes: Number of output classes
+        input_channels: Number of input channels (1 for grayscale, 3 for RGB)
+    
+    Returns:
+        model: Selected model instance
+        model_name: Name of the model
+    """
+    if choice == 1:
+        # CNN (baseline)
+        model = SimpleMNISTCNN(num_classes=num_classes)
+        return model, "CNN"
+    elif choice == 2:
+        # ResNet50
+        model = ResNet50(num_classes=num_classes, input_channels=input_channels)
+        return model, "ResNet50"
+    elif choice == 3:
+        # MobileNetV4
+        model = MobileNetV4(num_classes=num_classes, input_channels=input_channels)
+        return model, "MobileNetV4"
+    elif choice == 4:
+        # ConvNeXt
+        model = ConvNeXt(num_classes=num_classes, input_channels=input_channels)
+        return model, "ConvNeXt"
+    else:
+        raise ValueError(f"Invalid model choice: {choice}. Must be 1-4.")
+
+
+# ============================================================================
+# ResNet50 Architecture
+# ============================================================================
+
+"""
+Advanced Neural Network Architectures for Federated Split Learning
+
+This module contains multiple CNN architectures for federated learning experiments:
+1. CNN - SimpleMNISTCNN/ResNetFed (existing)
+2. ResNet50 - Deep residual network with bottleneck blocks
+3. MobileNetV4 - Efficient mobile architecture
+4. ConvNeXt - Modern CNN inspired by vision transformers
+
+All models support split learning with configurable split points.
+"""
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+
+# ============================================================================
+# ResNet50 Architecture
+# ============================================================================
+
+class Bottleneck(nn.Module):
+    """Bottleneck block for ResNet50 (1x1 -> 3x3 -> 1x1 convolutions)"""
+    expansion = 4
+    
+    def __init__(self, in_channels, out_channels, stride=1, downsample=None):
+        super(Bottleneck, self).__init__()
+        
+        # 1x1 conv
+        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(out_channels)
+        
+        # 3x3 conv
+        self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, 
+                               stride=stride, padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(out_channels)
+        
+        # 1x1 conv (expansion)
+        self.conv3 = nn.Conv2d(out_channels, out_channels * self.expansion, 
+                               kernel_size=1, bias=False)
+        self.bn3 = nn.BatchNorm2d(out_channels * self.expansion)
+        
+        self.relu = nn.ReLU(inplace=True)
+        self.downsample = downsample
+        
+    def forward(self, x):
+        identity = x
+        
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+        
+        out = self.conv2(out)
+        out = self.bn2(out)
+        out = self.relu(out)
+        
+        out = self.conv3(out)
+        out = self.bn3(out)
+        
+        if self.downsample is not None:
+            identity = self.downsample(x)
+        
+        out += identity
+        out = self.relu(out)
+        
+        return out
+
+
+class ResNet50(nn.Module):
+    """
+    ResNet50 architecture adapted for CIFAR-like datasets (32x32 or 28x28).
+    Supports split learning with 10 configurable split points.
+    """
+    def __init__(self, num_classes=10, input_channels=3):
+        super(ResNet50, self).__init__()
+        
+        self.in_channels = 64
+        
+        # Initial convolution (adapted for small images)
+        if input_channels == 1:  # MNIST/FMNIST
+            self.conv1 = nn.Conv2d(1, 64, kernel_size=3, stride=1, padding=1, bias=False)
+        else:  # CIFAR
+            self.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
+        
+        self.bn1 = nn.BatchNorm2d(64)
+        self.relu = nn.ReLU(inplace=True)
+        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+        
+        # ResNet stages: [3, 4, 6, 3] blocks per stage
+        self.layer1 = self._make_layer(64, 3, stride=1)    # 3 blocks
+        self.layer2 = self._make_layer(128, 4, stride=2)   # 4 blocks
+        self.layer3 = self._make_layer(256, 6, stride=2)   # 6 blocks  
+        self.layer4 = self._make_layer(512, 3, stride=2)   # 3 blocks
+        
+        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+        self.fc = nn.Linear(512 * Bottleneck.expansion, num_classes)
+        
+        # Split learning configuration
+        self.split_mode = 'full'  # 'full', 'client', 'server'
+        self.split_layer = None
+        
+        # Initialize weights
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+            elif isinstance(m, nn.BatchNorm2d):
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
+    
+    def _make_layer(self, out_channels, blocks, stride=1):
+        """Create a ResNet layer with multiple bottleneck blocks"""
+        downsample = None
+        if stride != 1 or self.in_channels != out_channels * Bottleneck.expansion:
+            downsample = nn.Sequential(
+                nn.Conv2d(self.in_channels, out_channels * Bottleneck.expansion,
+                         kernel_size=1, stride=stride, bias=False),
+                nn.BatchNorm2d(out_channels * Bottleneck.expansion)
+            )
+        
+        layers = []
+        layers.append(Bottleneck(self.in_channels, out_channels, stride, downsample))
+        self.in_channels = out_channels * Bottleneck.expansion
+        
+        for _ in range(1, blocks):
+            layers.append(Bottleneck(self.in_channels, out_channels))
+        
+        return nn.Sequential(*layers)
+    
+    def is_client_layer(self, layer_name, split_layer):
+        """
+        Determine if a layer belongs to the client side based on split layer.
+        Supports strict split range 25-49.
+        """
+        # Always server layers
+        if 'fc' in layer_name or 'avgpool' in layer_name:
+            return False
+            
+        # Initial layers are always client (up to Stage 2 / Layer 22)
+        # Includes conv1, bn1, layer1, layer2
+        if any(x in layer_name for x in ['conv1', 'bn1', 'relu', 'maxpool']):
+            return True
+            
+        if layer_name.startswith(('layer1', 'layer2')):
+            return True
+            
+        # Stage 3 (Layers 23-40) checks
+        if layer_name.startswith('layer3'):
+            try:
+                parts = layer_name.split('.')
+                if len(parts) > 1 and parts[1].isdigit():
+                    block_idx = int(parts[1])
+                    
+                    if split_layer <= 22: return False
+                    
+                    if split_layer <= 40:
+                        blocks_client = (split_layer - 22 + 2) // 3
+                        blocks_client = max(1, min(blocks_client, 6))
+                        return block_idx < blocks_client
+                    else:
+                        return True
+                return False 
+            except:
+                return False
+                
+        # Stage 4 (Layers 41-49) checks
+        if layer_name.startswith('layer4'):
+            try:
+                parts = layer_name.split('.')
+                if len(parts) > 1 and parts[1].isdigit():
+                    block_idx = int(parts[1])
+                    
+                    if split_layer <= 40: return False
+                    
+                    if split_layer <= 49:
+                        blocks_client = (split_layer - 40 + 2) // 3
+                        blocks_client = max(1, min(blocks_client, 3))
+                        return block_idx < blocks_client
+                    else:
+                        return True
+                return False
+            except:
+                return False
+                
+        return False
+
+    def configure_split(self, mode, split_layer):
+        """Configure split learning mode and layer"""
+        self.split_mode = mode
+        self.split_layer = split_layer
+    
+    def forward(self, x):
+        if self.split_mode == 'full':
+            return self._forward_full(x)
+        elif self.split_mode == 'client':
+            return self._forward_client(x)
+        elif self.split_mode == 'server':
+            return self._forward_server(x)
+    
+    def _forward_full(self, x):
+        """Full forward pass"""
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        x = self.maxpool(x)
+        
+        x = self.layer1(x)
+        x = self.layer2(x)
+        x = self.layer3(x)
+        x = self.layer4(x)
+        
+        x = self.avgpool(x)
+        x = torch.flatten(x, 1)
+        x = self.fc(x)
+        
+        return x
+    
+    def _forward_client(self, x):
+        """
+        Client-side forward pass up to split point (Layers 25-49).
+        
+        Mapping logic (Approximate layer counting):
+        - Conv1 + Stage1(3blk) + Stage2(4blk) = 1 + 9 + 12 = 22 layers (Fixed Client)
+        - Stage 3 (6 blocks): Layers 23-40
+          - Blk0: 23-25
+          - Blk1: 26-28
+          - Blk2: 29-31
+          - Blk3: 32-34
+          - Blk4: 35-37
+          - Blk5: 38-40
+        - Stage 4 (3 blocks): Layers 41-49
+          - Blk0: 41-43
+          - Blk1: 44-46
+          - Blk2: 47-49
+        """
+        # Always run up to Stage 2 (Layer 22)
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        x = self.maxpool(x)
+        
+        x = self.layer1(x)
+        x = self.layer2(x)
+        
+        # If split is exactly 22 or less (should not happen with strict 25-49), return
+        if self.split_layer <= 22:
+            return x
+            
+        # Stage 3 Logic (Layers 23-40)
+        if self.split_layer <= 40:
+            blocks_to_run = (self.split_layer - 22 + 2) // 3 # ceil division approx
+            blocks_to_run = max(1, min(blocks_to_run, 6)) # Clamp
+            
+            for i in range(blocks_to_run):
+                x = self.layer3[i](x)
+            return x
+            
+        # If split_layer > 40, run all Stage 3
+        x = self.layer3(x)
+        
+        # Stage 4 Logic (Layers 41-49)
+        if self.split_layer <= 49:
+            blocks_to_run = (self.split_layer - 40 + 2) // 3
+            blocks_to_run = max(1, min(blocks_to_run, 3))
+            
+            for i in range(blocks_to_run):
+                x = self.layer4[i](x)
+            return x
+            
+        # Post 49 (should be server, but if split > 49)
+        x = self.layer4(x)
+        return x
+    
+    def _forward_server(self, x):
+        """Server-side forward pass from split point"""
+        # Assume x comes from the cut point defined in _forward_client
+        
+        # Recover context
+        # If split <= 40 (Stage 3)
+        if self.split_layer <= 40:
+            # How many blocks did client run?
+            blocks_run = (self.split_layer - 22 + 2) // 3 
+            blocks_run = max(1, min(blocks_run, 6))
+            
+            # Server runs remaining blocks of Stage 3
+            if blocks_run < 6:
+                for i in range(blocks_run, 6):
+                    x = self.layer3[i](x)
+            
+            # Then all of Stage 4
+            x = self.layer4(x)
+            
+        elif self.split_layer <= 49:
+            # Client ran all Stage 3 and some Stage 4
+            blocks_run = (self.split_layer - 40 + 2) // 3
+            blocks_run = max(1, min(blocks_run, 3))
+            
+            # Server runs remaining blocks of Stage 4
+            if blocks_run < 3:
+                for i in range(blocks_run, 3):
+                    x = self.layer4[i](x)
+                    
+        # Final Head
+        x = self.avgpool(x)
+        x = torch.flatten(x, 1)
+        x = self.fc(x)
+        
+        return x
+
+
+# Test function
+
+# ============================================================================
+# MobileNetV4 Architecture
+# ============================================================================
+
+"""
+MobileNetV4 Architecture for Federated Split Learning
+
+Efficient mobile architecture with inverted residual blocks and squeeze-excitation.
+Adapted for CIFAR-10/100 and MNIST/FMNIST datasets.
+"""
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+
+class SqueezeExcitation(nn.Module):
+    """Squeeze-and-Excitation block"""
+    def __init__(self, channels, reduction=4):
+        super(SqueezeExcitation, self).__init__()
+        self.avgpool = nn.AdaptiveAvgPool2d(1)
+        self.fc1 = nn.Linear(channels, channels // reduction)
+        self.fc2 = nn.Linear(channels // reduction, channels)
+        
+    def forward(self, x):
+        b, c, _, _ = x.size()
+        y = self.avgpool(x).view(b, c)
+        y = F.relu(self.fc1(y))
+        y = torch.sigmoid(self.fc2(y)).view(b, c, 1, 1)
+        return x * y
+
+
+class InvertedResidual(nn.Module):
+    """Inverted Residual Block (MBConv)"""
+    def __init__(self, in_channels, out_channels, stride, expand_ratio, use_se=True):
+        super(InvertedResidual, self).__init__()
+        self.stride = stride
+        self.use_residual = (stride == 1 and in_channels == out_channels)
+        
+        hidden_dim = in_channels * expand_ratio
+        
+        layers = []
+        # Expansion
+        if expand_ratio != 1:
+            layers.append(nn.Conv2d(in_channels, hidden_dim, 1, bias=False))
+            layers.append(nn.BatchNorm2d(hidden_dim))
+            layers.append(nn.ReLU6(inplace=True))
+        
+        # Depthwise
+        layers.extend([
+            nn.Conv2d(hidden_dim, hidden_dim, 3, stride=stride, padding=1, 
+                     groups=hidden_dim, bias=False),
+            nn.BatchNorm2d(hidden_dim),
+            nn.ReLU6(inplace=True)
+        ])
+        
+        # Squeeze-and-Excitation
+        if use_se:
+            layers.append(SqueezeExcitation(hidden_dim))
+        
+        # Projection
+        layers.extend([
+            nn.Conv2d(hidden_dim, out_channels, 1, bias=False),
+            nn.BatchNorm2d(out_channels)
+        ])
+        
+        self.conv = nn.Sequential(*layers)
+        
+    def forward(self, x):
+        if self.use_residual:
+            return x + self.conv(x)
+        else:
+            return self.conv(x)
+
+
+class MobileNetV4(nn.Module):
+    """
+    MobileNetV4 architecture adapted for small images (32x32 or 28x28).
+    Supports split learning with 10 configurable split points.
+    """
+    def __init__(self, num_classes=10, input_channels=3, width_mult=1.0):
+        super(MobileNetV4, self).__init__()
+        
+        # Building blocks: [expansion, out_channels, num_blocks, stride]
+        config = [
+            [1, 16, 1, 1],   # Stage 1
+            [6, 24, 2, 2],   # Stage 2
+            [6, 32, 3, 2],   # Stage 3
+  [6, 64, 4, 2],   # Stage 4
+            [6, 96, 3, 1],   # Stage 5
+            [6, 160, 3, 2],  # Stage 6
+            [6, 320, 1, 1],  # Stage 7
+        ]
+        
+        # Adjust channels based on width multiplier
+        input_channel = int(32 * width_mult)
+        
+        # Initial convolution
+        self.features = [nn.Sequential(
+            nn.Conv2d(input_channels, input_channel, 3, stride=1, padding=1, bias=False),
+            nn.BatchNorm2d(input_channel),
+            nn.ReLU6(inplace=True)
+        )]
+        
+        # Build inverted residual blocks
+        for t, c, n, s in config:
+            output_channel = int(c * width_mult)
+            for i in range(n):
+                stride = s if i == 0 else 1
+                self.features.append(
+                    InvertedResidual(input_channel, output_channel, stride, t)
+                )
+                input_channel = output_channel
+        
+        # Final convolution
+        self.features.append(nn.Sequential(
+            nn.Conv2d(input_channel, 1280, 1, bias=False),
+            nn.BatchNorm2d(1280),
+            nn.ReLU6(inplace=True)
+        ))
+        
+        self.features = nn.Sequential(*self.features)
+        
+        # Classifier
+        self.avgpool = nn.AdaptiveAvgPool2d(1)
+        self.classifier = nn.Linear(1280, num_classes)
+        
+        # Split learning configuration
+        self.split_mode = 'full'
+        self.split_layer = None
+        
+        # Initialize weights
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out')
+                if m.bias is not None:
+                    nn.init.zeros_(m.bias)
+            elif isinstance(m, nn.BatchNorm2d):
+                nn.init.ones_(m.weight)
+                nn.init.zeros_(m.bias)
+            elif isinstance(m, nn.Linear):
+                nn.init.normal_(m.weight, 0, 0.01)
+                nn.init.zeros_(m.bias)
+    
+    def is_client_layer(self, layer_name, split_layer):
+        """
+        Determine if a layer belongs to the client side.
+        Supports strict split range 27-52.
+        """
+        # Initial checks
+        if 'classifier' in layer_name or 'avgpool' in layer_name:
+            return False
+            
+        # Parse features.X
+        if layer_name.startswith('features.'):
+            try:
+                parts = layer_name.split('.')
+                layer_idx = int(parts[1])
+                
+                # Map 27-52 to feature indices
+                if split_layer < 27:
+                    limit_idx = 6
+                elif split_layer > 52:
+                    limit_idx = 19
+                else:
+                    offset = split_layer - 27
+                    limit_idx = 6 + int(offset * 0.5)
+                
+                limit_idx = max(1, min(limit_idx, 19))
+                
+                return layer_idx < limit_idx
+            except:
+                return False
+                
+        return False
+
+    def configure_split(self, mode, split_layer):
+        """Configure split learning mode and layer"""
+        self.split_mode = mode
+        self.split_layer = split_layer
+    
+    def forward(self, x):
+        if self.split_mode == 'full':
+            return self._forward_full(x)
+        elif self.split_mode == 'client':
+            return self._forward_client(x)
+        elif self.split_mode == 'server':
+            return self._forward_server(x)
+    
+    def _forward_full(self, x):
+        """Full forward pass"""
+        x = self.features(x)
+        x = self.avgpool(x)
+        x = torch.flatten(x, 1)
+        x = self.classifier(x)
+        return x
+    
+    def _forward_client(self, x):
+        """
+        Client-side forward pass up to split point (Layers 27-52).
+        
+        Mapping logic (Approximate):
+        MobileNetV4 has ~53 blocks/layers.
+        features[] list has ~19 top-level modules (blocks).
+        
+        We map range [27, 52] to feature indices [6, 18].
+        Slope ≈ (18-6)/(52-27) = 12/25 ≈ 0.5
+        
+        feature_idx = 6 + (split_layer - 27) * 0.5
+        """
+        # Map 27-52 to 6-18
+        # 6 corresponds to Start of Stage 4 (or thereabouts)
+        
+        if self.split_layer < 27:
+            # Fallback for unexpected low values: run minimal
+            limit_idx = 6
+        elif self.split_layer > 52:
+            limit_idx = 19
+        else:
+            # Linear mapping
+            offset = self.split_layer - 27
+            limit_idx = 6 + int(offset * 0.5)
+            
+        limit_idx = max(1, min(limit_idx, len(self.features)))
+        
+        # Execute
+        for i in range(limit_idx):
+            x = self.features[i](x)
+        return x
+    
+    def _forward_server(self, x):
+        """Server-side forward pass from split point"""
+        if self.split_layer < 27:
+            start_idx = 6
+        elif self.split_layer > 52:
+            start_idx = 19
+        else:
+            offset = self.split_layer - 27
+            start_idx = 6 + int(offset * 0.5)
+            
+        start_idx = max(0, min(start_idx, len(self.features)))
+        
+        for i in range(start_idx, len(self.features)):
+            x = self.features[i](x)
+        
+        x = self.avgpool(x)
+        x = torch.flatten(x, 1)
+        x = self.classifier(x)
+        return x
+
+
+# Test
+
+# ============================================================================
+# ConvNeXt Architecture
+# ============================================================================
+
+"""
+ConvNeXt Architecture for Federated Split Learning
+
+Modern CNN inspired by vision transformers with large kernels and LayerNorm.
+Adapted for CIFAR-10/100 and MNIST/FMNIST datasets.
+"""
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+
+class ConvNeXtBlock(nn.Module):
+    """ConvNeXt Block with large kernel depthwise conv"""
+    def __init__(self, dim, drop_path=0., layer_scale_init_value=1e-6):
+        super().__init__()
+        self.dwconv = nn.Conv2d(dim, dim, kernel_size=7, padding=3, groups=dim)
+        self.norm = nn.LayerNorm(dim, eps=1e-6)
+        self.pwconv1 = nn.Linear(dim, 4 * dim)
+        self.act = nn.GELU()
+        self.pwconv2 = nn.Linear(4 * dim, dim)
+        self.gamma = nn.Parameter(layer_scale_init_value * torch.ones((dim)), 
+                                   requires_grad=True) if layer_scale_init_value > 0 else None
+        
+    def forward(self, x):
+        input = x
+        x = self.dwconv(x)
+        x = x.permute(0, 2, 3, 1)  # (N, C, H, W) -> (N, H, W, C)
+        x = self.norm(x)
+        x = self.pwconv1(x)
+        x = self.act(x)
+        x = self.pwconv2(x)
+        if self.gamma is not None:
+            x = self.gamma * x
+        x = x.permute(0, 3, 1, 2)  # (N, H, W, C) -> (N, C, H, W)
+        
+        x = input + x
+        return x
+
+
+class ConvNeXt(nn.Module):
+    """
+    ConvNeXt-Tiny architecture adapted for small images (32x32 or 28x28).
+    Supports split learning with 10 configurable split points.
+    
+    Block configuration: [3, 3, 9, 3] for Tiny variant
+    """
+    def __init__(self, num_classes=10, input_channels=3, depths=[3, 3, 9, 3], 
+                 dims=[96, 192, 384, 768]):
+        super().__init__()
+        
+        # Stem - patchify with 4x4 conv (stride 4 -> 2 for small images)
+        self.downsample_layers = nn.ModuleList()
+        stem = nn.Sequential(
+            nn.Conv2d(input_channels, dims[0], kernel_size=4, stride=2, padding=1),
+            nn.BatchNorm2d(dims[0])
+        )
+        self.downsample_layers.append(stem)
+        
+        # Downsampling layers between stages
+        for i in range(3):
+            downsample_layer = nn.Sequential(
+                nn.BatchNorm2d(dims[i]),
+                nn.Conv2d(dims[i], dims[i+1], kernel_size=2, stride=2),
+            )
+            self.downsample_layers.append(downsample_layer)
+        
+        # 4 feature resolution stages
+        self.stages = nn.ModuleList()
+        for i in range(4):
+            stage = nn.Sequential(
+                *[ConvNeXtBlock(dim=dims[i]) for _ in range(depths[i])]
+            )
+            self.stages.append(stage)
+        
+        # Head
+        self.norm = nn.LayerNorm(dims[-1])
+        self.head = nn.Linear(dims[-1], num_classes)
+        
+        # Split learning configuration
+        self.split_mode = 'full'
+        self.split_layer = None
+        
+        # Initialize weights
+        self.apply(self._init_weights)
+        
+    def _init_weights(self, m):
+        if isinstance(m, (nn.Conv2d, nn.Linear)):
+            nn.init.trunc_normal_(m.weight, std=0.02)
+            if m.bias is not None:
+                nn.init.constant_(m.bias, 0)
+    
+    def is_client_layer(self, layer_name, split_layer):
+        """
+        Determine if a layer belongs to the client side.
+        Supports strict split range 30-58.
+        """
+        # Head and norm are always server for supported splits
+        if 'head' in layer_name or 'norm' in layer_name:
+            if 'stages' not in layer_name and 'downsample' not in layer_name:
+                return False
+                
+        # Determine how many blocks in stage 2 and 3 are client
+        client_s2_blocks = 9
+        client_s3_blocks = 0
+        
+        if split_layer < 37:
+            offset = split_layer - 30
+            client_s2_blocks = min(9, 4 + offset)
+        else:
+            client_s2_blocks = 9
+            
+        if split_layer >= 37:
+            if split_layer <= 43: client_s3_blocks = 1
+            elif split_layer <= 50: client_s3_blocks = 2
+            else: client_s3_blocks = 3
+            
+        if layer_name.startswith('downsample_layers.'):
+            try:
+                idx = int(layer_name.split('.')[1])
+                # 0, 1 always client (Stage 0, 1 are client in range 30-58)
+                if idx <= 1: return True
+                # 2 is before stage 2, always client
+                if idx == 2: return True 
+                
+                # 3 is before stage 3. 
+                if idx == 3:
+                     return split_layer >= 37
+                return False
+            except: return False
+            
+        if layer_name.startswith('stages.'):
+            try:
+                parts = layer_name.split('.')
+                stage_idx = int(parts[1])
+                block_idx = int(parts[2]) if len(parts) > 2 else -1
+                
+                if stage_idx <= 1: return True
+                
+                if stage_idx == 2:
+                    return block_idx < client_s2_blocks
+                    
+                if stage_idx == 3:
+                    return block_idx < client_s3_blocks
+                    
+                return False
+            except:
+                return False
+        return False
+
+    def configure_split(self, mode, split_layer):
+        """Configure split learning mode and layer"""
+        self.split_mode = mode
+        self.split_layer = split_layer
+    
+    def forward(self, x):
+        if self.split_mode == 'full':
+            return self._forward_full(x)
+        elif self.split_mode == 'client':
+            return self._forward_client(x)
+        elif self.split_mode == 'server':
+            return self._forward_server(x)
+    
+    def _forward_full(self, x):
+        """Full forward pass"""
+        for i in range(4):
+            x = self.downsample_layers[i](x)
+            x = self.stages[i](x)
+        
+        x = x.mean([-2, -1])  # Global average pooling
+        x = self.norm(x)
+        x = self.head(x)
+        return x
+    
+    def _forward_client(self, x):
+        """
+        Client-side forward pass up to split point (Layers 30-58).
+        
+        Mapping logic:
+        ConvNeXt has 4 Stages: [3, 3, 9, 3] blocks.
+        Approx depth:
+        - Stage 0: Layers 1-4
+        - Stage 1: Layers 5-8
+        - Stage 2: Layers 9-36 (Start 30 is late Stage 2)
+        - Stage 3: Layers 37-58 (Start 37 is Stage 3)
+        """
+        # Always run Stage 0 and Stage 1 (and downsamples)
+        x = self.downsample_layers[0](x)
+        x = self.stages[0](x)
+        x = self.downsample_layers[1](x)
+        x = self.stages[1](x)
+        x = self.downsample_layers[2](x) # Into Stage 2
+        
+        # Stage 2 (9 blocks). Indices 0..8
+        # Range 30-36 falls in Stage 2.
+        
+        client_s2_blocks = 9 # Run all by default if split >= 37
+        client_s3_blocks = 0
+        
+        if self.split_layer < 37:
+            # Map 30-36 to Stage 2 blocks (Linear map 30->4 ... 36->9?)
+            offset = self.split_layer - 30
+            client_s2_blocks = min(9, 4 + offset) # Start at block 4
+            
+        else:
+            # split >= 37. Run all Stage 2.
+            client_s2_blocks = 9
+            
+        # Execute Stage 2
+        for i in range(client_s2_blocks):
+            x = self.stages[2][i](x)
+            
+        if self.split_layer < 37:
+            return x
+            
+        # Stage 3 logic
+        # Downsample 3
+        x = self.downsample_layers[3](x)
+        
+        if self.split_layer >= 37:
+            # Map 37-58 to Stage 3 blocks (0, 1, 2)
+            if self.split_layer <= 43:
+                client_s3_blocks = 1
+            elif self.split_layer <= 50:
+                client_s3_blocks = 2
+            else:
+                client_s3_blocks = 3
+                
+            for i in range(client_s3_blocks):
+                x = self.stages[3][i](x)
+                
+        return x
+    
+    def _forward_server(self, x):
+        """Server-side forward pass"""
+        
+        # Recover context
+        client_s2_blocks = 9
+        client_s3_blocks = 0
+        
+        if self.split_layer < 37:
+            offset = self.split_layer - 30
+            client_s2_blocks = min(9, 4 + offset)
+            
+            # Server finishes Stage 2
+            for i in range(client_s2_blocks, 9):
+                x = self.stages[2][i](x)
+                
+            # Server does Stage 3 full
+            x = self.downsample_layers[3](x)
+            x = self.stages[3](x)
+            
+        else:
+            # Stage 2 was done
+            # Stage 3 logic
+            if self.split_layer <= 43:
+                client_s3_blocks = 1
+            elif self.split_layer <= 50:
+                client_s3_blocks = 2
+            else:
+                client_s3_blocks = 3
+            
+            # Server finishes Stage 3
+            for i in range(client_s3_blocks, 3):
+                x = self.stages[3][i](x)
+                
+        x = x.mean([-2, -1])
+        x = self.norm(x)
+        x = self.head(x)
+        return x
+
+
+# Test
+
+
+# ============================================================================
+# Model Selection Helper
+# ============================================================================
+
+def get_model_by_choice(choice, num_classes, input_channels):
+    """
+    Get model instance based on user choice.
+    
+    Args:
+        choice: Model number (1-4)
+        num_classes: Number of output classes
+        input_channels: Number of input channels (1 for grayscale, 3 for RGB)
+    
+    Returns:
+        model: Selected model instance
+        model_name: Name of the model
+    """
+    if choice == 1:
+        # CNN (baseline)
+        model = SimpleMNISTCNN(num_classes=num_classes)
+        return model, "CNN"
+    elif choice == 2:
+        # ResNet50
+        model = ResNet50(num_classes=num_classes, input_channels=input_channels)
+        return model, "ResNet50"
+    elif choice == 3:
+        # MobileNetV4
+        model = MobileNetV4(num_classes=num_classes, input_channels=input_channels)
+        return model, "MobileNetV4"
+    elif choice == 4:
+        # ConvNeXt
+        model = ConvNeXt(num_classes=num_classes, input_channels=input_channels)
+        return model, "ConvNeXt"
+    else:
+        raise ValueError(f"Invalid model choice: {choice}. Must be 1-4.")

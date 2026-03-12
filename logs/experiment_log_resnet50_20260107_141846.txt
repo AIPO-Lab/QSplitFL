@@ -1,0 +1,1942 @@
+Experiment Log - ResNet50
+Started: 2026-01-07 14:18:46.503982
+================================================================================
+
+Configurations:
+  MNIST: 5 clients, 10 rounds
+  FMNIST: 5 clients, 10 rounds
+  CIFAR-10: 5 clients, 10 rounds
+  CIFAR-100: 5 clients, 10 rounds
+
+================================================================================
+
+
+================================================================================
+Experiment 1: MNIST
+================================================================================
+Started: 2026-01-07 14:18:46.505342
+Completed: 2026-01-07 17:06:02.515259
+Duration: ~2.8 hours
+Estimated: ~30 min
+
+
+Select Model Architecture:
+============================================================
+1: CNN (Baseline)
+2: ResNet50 (Deep Residual Network)
+3: MobileNetV4 (Efficient Mobile Architecture)
+4: ConvNeXt (Modern CNN with Vision Transformer Design)
+============================================================
+Enter model number (1-4): 
+Selected model: ResNet50
+Enter the total number of clients: Model Configuration: Layers=50, Split Range=[25, 49], Action Size=25
+Enter the number of rounds: ================================================================================
+CAPABILITY-AWARE Q-LEARNING FOR SPLIT POINT OPTIMIZATION (MNIST)
+================================================================================
+
+Configuration:
+  Clients: 5, Selected per round: 3
+  Total layers: 50
+  Rounds per episode: 10, Episodes: 1
+  Use Committee DQN: True (M=3)
+  Use Reward Committee: True
+================================================================================
+
+ Loading and preparing MNIST dataset...
+ Dataset prepared: 5 clients with heterogeneous data
+
+Initializing components...
+ Committee DQN initialized (M=3)
+ Reward Committee initialized (M=3)
+
+ Starting training...
+================================================================================
+
+================================================================================
+EPISODE 1/1
+================================================================================
+
+--- Round 1/10 ---
+Selected Clients: [0, 4, 2]
+Cluster: Overall=0.750, Variance=0.129
+Split: 35 (Random (epsilon=1.000))
+Training Client 0...
+    [Client 0] Epoch 1/5: Loss=11.6587, Accuracy=17.36%
+    [Client 0] Epoch 2/5: Loss=1.4169, Accuracy=52.24%
+    [Client 0] Epoch 3/5: Loss=0.7423, Accuracy=76.12%
+    [Client 0] Epoch 4/5: Loss=0.4657, Accuracy=85.34%
+    [Client 0] Epoch 5/5: Loss=0.3390, Accuracy=89.22%
+Training Client 4...
+    [Client 4] Epoch 1/5: Loss=0.2860, Accuracy=91.08%
+    [Client 4] Epoch 2/5: Loss=0.2235, Accuracy=93.00%
+    [Client 4] Epoch 3/5: Loss=0.1889, Accuracy=94.08%
+    [Client 4] Epoch 4/5: Loss=0.1681, Accuracy=94.70%
+    [Client 4] Epoch 5/5: Loss=0.1480, Accuracy=95.36%
+Training Client 2...
+    [Client 2] Epoch 1/5: Loss=0.1685, Accuracy=94.77%
+    [Client 2] Epoch 2/5: Loss=0.1295, Accuracy=95.89%
+    [Client 2] Epoch 3/5: Loss=0.1154, Accuracy=96.25%
+    [Client 2] Epoch 4/5: Loss=0.1018, Accuracy=96.74%
+    [Client 2] Epoch 5/5: Loss=0.0968, Accuracy=97.02%
+Global (Avg Client): Acc=0.9386, Loss=0.1946
+Clients: Avg Loss=0.1946, Avg Acc=0.9386
+Individual Client Losses: ['0.3390', '0.1480', '0.0968']
+Individual Client Accuracies: ['0.8922', '0.9536', '0.9702']
+  (First round: Reward set to 0.0)
+Round 1 Result:
+  Selected Clients: [0, 4, 2]
+  Split Layer: 35
+  Selection Method: Random (epsilon=1.000)
+  Epsilon: 1.0000
+  Cluster Loss: 0.1946
+  Delta Loss: 0.0000
+  Rho: 1.0000
+  Reward: 0.0000
+
+--- Round 2/10 ---
+Selected Clients: [2, 1, 0]
+Cluster: Overall=0.659, Variance=0.084
+Split: 25 (Random (epsilon=0.952))
+Training Client 2...
+    [Client 2] Epoch 1/5: Loss=0.1136, Accuracy=96.49%
+    [Client 2] Epoch 2/5: Loss=0.0841, Accuracy=97.45%
+    [Client 2] Epoch 3/5: Loss=0.0714, Accuracy=97.62%
+    [Client 2] Epoch 4/5: Loss=0.0762, Accuracy=97.58%
+    [Client 2] Epoch 5/5: Loss=0.0687, Accuracy=97.79%
+Training Client 1...
+    [Client 1] Epoch 1/5: Loss=0.1228, Accuracy=96.24%
+    [Client 1] Epoch 2/5: Loss=0.0902, Accuracy=97.27%
+    [Client 1] Epoch 3/5: Loss=0.0742, Accuracy=97.53%
+    [Client 1] Epoch 4/5: Loss=0.0632, Accuracy=97.97%
+    [Client 1] Epoch 5/5: Loss=0.0535, Accuracy=98.17%
+Training Client 0...
+    [Client 0] Epoch 1/5: Loss=0.0972, Accuracy=97.12%
+    [Client 0] Epoch 2/5: Loss=0.0721, Accuracy=97.71%
+    [Client 0] Epoch 3/5: Loss=0.0579, Accuracy=98.14%
+    [Client 0] Epoch 4/5: Loss=0.0532, Accuracy=98.29%
+    [Client 0] Epoch 5/5: Loss=0.0454, Accuracy=98.54%
+Global (Avg Client): Acc=0.9817, Loss=0.0559
+Clients: Avg Loss=0.0559, Avg Acc=0.9817
+Individual Client Losses: ['0.0687', '0.0535', '0.0454']
+Individual Client Accuracies: ['0.9779', '0.9817', '0.9854']
+Round 2 Result:
+  Selected Clients: [2, 1, 0]
+  Split Layer: 25
+  Selection Method: Random (epsilon=0.952)
+  Epsilon: 0.9517
+  Cluster Loss: 0.0559
+  Delta Loss: -0.1387
+  Rho: 0.9330
+  Reward: 0.1294
+
+--- Round 3/10 ---
+Selected Clients: [1, 0, 2]
+Cluster: Overall=0.650, Variance=0.092
+Split: 43 (Random (epsilon=0.906))
+Training Client 1...
+    [Client 1] Epoch 1/5: Loss=0.0735, Accuracy=97.67%
+    [Client 1] Epoch 2/5: Loss=0.0588, Accuracy=98.09%
+    [Client 1] Epoch 3/5: Loss=0.0419, Accuracy=98.71%
+    [Client 1] Epoch 4/5: Loss=0.0441, Accuracy=98.65%
+    [Client 1] Epoch 5/5: Loss=0.0420, Accuracy=98.58%
+Training Client 0...
+    [Client 0] Epoch 1/5: Loss=0.0690, Accuracy=97.85%
+    [Client 0] Epoch 2/5: Loss=0.0428, Accuracy=98.67%
+    [Client 0] Epoch 3/5: Loss=0.0421, Accuracy=98.61%
+    [Client 0] Epoch 4/5: Loss=0.0330, Accuracy=99.00%
+    [Client 0] Epoch 5/5: Loss=0.0288, Accuracy=99.05%
+Training Client 2...
+    [Client 2] Epoch 1/5: Loss=0.0749, Accuracy=97.71%
+    [Client 2] Epoch 2/5: Loss=0.0496, Accuracy=98.49%
+    [Client 2] Epoch 3/5: Loss=0.0477, Accuracy=98.49%
+    [Client 2] Epoch 4/5: Loss=0.0375, Accuracy=98.88%
+    [Client 2] Epoch 5/5: Loss=0.0409, Accuracy=98.78%
+Global (Avg Client): Acc=0.9880, Loss=0.0372
+Clients: Avg Loss=0.0372, Avg Acc=0.9880
+Individual Client Losses: ['0.0420', '0.0288', '0.0409']
+Individual Client Accuracies: ['0.9858', '0.9905', '0.9878']
+Round 3 Result:
+  Selected Clients: [1, 0, 2]
+  Split Layer: 43
+  Selection Method: Random (epsilon=0.906)
+  Epsilon: 0.9058
+  Cluster Loss: 0.0372
+  Delta Loss: -0.0187
+  Rho: 0.8706
+  Reward: 0.0162
+
+--- Round 4/10 ---
+Selected Clients: [4, 0, 2]
+Cluster: Overall=0.744, Variance=0.131
+Split: 49 (Random (epsilon=0.862))
+Training Client 4...
+    [Client 4] Epoch 1/5: Loss=0.0672, Accuracy=97.81%
+    [Client 4] Epoch 2/5: Loss=0.0440, Accuracy=98.58%
+    [Client 4] Epoch 3/5: Loss=0.0422, Accuracy=98.71%
+    [Client 4] Epoch 4/5: Loss=0.0291, Accuracy=99.02%
+    [Client 4] Epoch 5/5: Loss=0.0301, Accuracy=99.08%
+Training Client 0...
+    [Client 0] Epoch 1/5: Loss=0.0527, Accuracy=98.43%
+    [Client 0] Epoch 2/5: Loss=0.0381, Accuracy=98.99%
+    [Client 0] Epoch 3/5: Loss=0.0337, Accuracy=98.98%
+    [Client 0] Epoch 4/5: Loss=0.0325, Accuracy=99.02%
+    [Client 0] Epoch 5/5: Loss=0.0305, Accuracy=99.02%
+Training Client 2...
+    [Client 2] Epoch 1/5: Loss=0.0522, Accuracy=98.41%
+    [Client 2] Epoch 2/5: Loss=0.0412, Accuracy=98.70%
+    [Client 2] Epoch 3/5: Loss=0.0414, Accuracy=98.70%
+    [Client 2] Epoch 4/5: Loss=0.0212, Accuracy=99.28%
+    [Client 2] Epoch 5/5: Loss=0.0259, Accuracy=99.22%
+Global (Avg Client): Acc=0.9911, Loss=0.0288
+Clients: Avg Loss=0.0288, Avg Acc=0.9911
+Individual Client Losses: ['0.0301', '0.0305', '0.0259']
+Individual Client Accuracies: ['0.9908', '0.9902', '0.9922']
+Round 4 Result:
+  Selected Clients: [4, 0, 2]
+  Split Layer: 49
+  Selection Method: Random (epsilon=0.862)
+  Epsilon: 0.8621
+  Cluster Loss: 0.0288
+  Delta Loss: -0.0084
+  Rho: 0.8123
+  Reward: 0.0068
+
+--- Round 5/10 ---
+Selected Clients: [3, 0, 4]
+Cluster: Overall=0.668, Variance=0.125
+  Tie detected among actions: [35, 26, 46]
+  Tie-breaking Q-values: {35: np.float64(0.09569806605577469), 26: np.float64(0.027909617871046066), 46: np.float64(0.1315483326713244)}
+  Selected action: 46
+Split: 46 (Voting (votes: {35: 1, 26: 1, 46: 1}, epsilon=0.821))
+Training Client 3...
+    [Client 3] Epoch 1/5: Loss=0.0660, Accuracy=98.08%
+    [Client 3] Epoch 2/5: Loss=0.0523, Accuracy=98.37%
+    [Client 3] Epoch 3/5: Loss=0.0387, Accuracy=98.90%
+    [Client 3] Epoch 4/5: Loss=0.0336, Accuracy=98.98%
+    [Client 3] Epoch 5/5: Loss=0.0390, Accuracy=98.74%
+Training Client 0...
+    [Client 0] Epoch 1/5: Loss=0.0512, Accuracy=98.49%
+    [Client 0] Epoch 2/5: Loss=0.0373, Accuracy=98.88%
+    [Client 0] Epoch 3/5: Loss=0.0314, Accuracy=99.12%
+    [Client 0] Epoch 4/5: Loss=0.0267, Accuracy=99.24%
+    [Client 0] Epoch 5/5: Loss=0.0332, Accuracy=98.95%
+Training Client 4...
+    [Client 4] Epoch 1/5: Loss=0.0604, Accuracy=98.22%
+    [Client 4] Epoch 2/5: Loss=0.0401, Accuracy=98.72%
+    [Client 4] Epoch 3/5: Loss=0.0373, Accuracy=98.84%
+    [Client 4] Epoch 4/5: Loss=0.0323, Accuracy=98.98%
+    [Client 4] Epoch 5/5: Loss=0.0282, Accuracy=99.02%
+Global (Avg Client): Acc=0.9890, Loss=0.0335
+Clients: Avg Loss=0.0335, Avg Acc=0.9890
+Individual Client Losses: ['0.0390', '0.0332', '0.0282']
+Individual Client Accuracies: ['0.9874', '0.9895', '0.9902']
+Round 5 Result:
+  Selected Clients: [3, 0, 4]
+  Split Layer: 46
+  Selection Method: Voting (votes: {35: 1, 26: 1, 46: 1}, epsilon=0.821)
+  Epsilon: 0.8205
+  Cluster Loss: 0.0335
+  Delta Loss: 0.0046
+  Rho: 0.7579
+  Reward: -0.0035
+   Target networks updated
+
+--- Round 6/10 ---
+Selected Clients: [0, 1, 4]
+Cluster: Overall=0.666, Variance=0.135
+Split: 44 (Random (epsilon=0.781))
+Training Client 0...
+    [Client 0] Epoch 1/5: Loss=0.0451, Accuracy=98.71%
+    [Client 0] Epoch 2/5: Loss=0.0304, Accuracy=99.08%
+    [Client 0] Epoch 3/5: Loss=0.0241, Accuracy=99.33%
+    [Client 0] Epoch 4/5: Loss=0.0247, Accuracy=99.15%
+    [Client 0] Epoch 5/5: Loss=0.0305, Accuracy=99.05%
+Training Client 1...
+    [Client 1] Epoch 1/5: Loss=0.0638, Accuracy=98.08%
+    [Client 1] Epoch 2/5: Loss=0.0390, Accuracy=98.83%
+    [Client 1] Epoch 3/5: Loss=0.0299, Accuracy=99.11%
+    [Client 1] Epoch 4/5: Loss=0.0351, Accuracy=98.96%
+    [Client 1] Epoch 5/5: Loss=0.0334, Accuracy=98.88%
+Training Client 4...
+    [Client 4] Epoch 1/5: Loss=0.0527, Accuracy=98.52%
+    [Client 4] Epoch 2/5: Loss=0.0367, Accuracy=98.89%
+    [Client 4] Epoch 3/5: Loss=0.0337, Accuracy=98.98%
+    [Client 4] Epoch 4/5: Loss=0.0278, Accuracy=99.09%
+    [Client 4] Epoch 5/5: Loss=0.0247, Accuracy=99.23%
+Global (Avg Client): Acc=0.9906, Loss=0.0295
+Clients: Avg Loss=0.0295, Avg Acc=0.9906
+Individual Client Losses: ['0.0305', '0.0334', '0.0247']
+Individual Client Accuracies: ['0.9905', '0.9888', '0.9923']
+Round 6 Result:
+  Selected Clients: [0, 1, 4]
+  Split Layer: 44
+  Selection Method: Random (epsilon=0.781)
+  Epsilon: 0.7810
+  Cluster Loss: 0.0295
+  Delta Loss: -0.0039
+  Rho: 0.7071
+  Reward: 0.0028
+
+--- Round 7/10 ---
+Selected Clients: [4, 0, 2]
+Cluster: Overall=0.750, Variance=0.122
+Split: 38 (Random (epsilon=0.743))
+Training Client 4...
+    [Client 4] Epoch 1/5: Loss=0.0216, Accuracy=99.30%
+    [Client 4] Epoch 2/5: Loss=0.0260, Accuracy=99.18%
+    [Client 4] Epoch 3/5: Loss=0.0326, Accuracy=98.94%
+    [Client 4] Epoch 4/5: Loss=0.0277, Accuracy=99.24%
+    [Client 4] Epoch 5/5: Loss=0.0328, Accuracy=98.91%
+Training Client 0...
+    [Client 0] Epoch 1/5: Loss=0.0539, Accuracy=98.38%
+    [Client 0] Epoch 2/5: Loss=0.0430, Accuracy=98.72%
+    [Client 0] Epoch 3/5: Loss=0.0287, Accuracy=99.18%
+    [Client 0] Epoch 4/5: Loss=0.0247, Accuracy=99.28%
+    [Client 0] Epoch 5/5: Loss=0.0212, Accuracy=99.33%
+Training Client 2...
+    [Client 2] Epoch 1/5: Loss=0.0559, Accuracy=98.30%
+    [Client 2] Epoch 2/5: Loss=0.0501, Accuracy=98.58%
+    [Client 2] Epoch 3/5: Loss=0.0301, Accuracy=99.08%
+    [Client 2] Epoch 4/5: Loss=0.0345, Accuracy=99.03%
+    [Client 2] Epoch 5/5: Loss=0.0261, Accuracy=99.26%
+Global (Avg Client): Acc=0.9916, Loss=0.0267
+Clients: Avg Loss=0.0267, Avg Acc=0.9916
+Individual Client Losses: ['0.0328', '0.0212', '0.0261']
+Individual Client Accuracies: ['0.9891', '0.9932', '0.9926']
+Round 7 Result:
+  Selected Clients: [4, 0, 2]
+  Split Layer: 38
+  Selection Method: Random (epsilon=0.743)
+  Epsilon: 0.7434
+  Cluster Loss: 0.0267
+  Delta Loss: -0.0029
+  Rho: 0.6598
+  Reward: 0.0019
+
+--- Round 8/10 ---
+Selected Clients: [1, 3, 0]
+Cluster: Overall=0.592, Variance=0.020
+Split: 46 (Random (epsilon=0.708))
+Training Client 1...
+    [Client 1] Epoch 1/5: Loss=0.0514, Accuracy=98.47%
+    [Client 1] Epoch 2/5: Loss=0.0314, Accuracy=99.09%
+    [Client 1] Epoch 3/5: Loss=0.0297, Accuracy=99.10%
+    [Client 1] Epoch 4/5: Loss=0.0264, Accuracy=99.14%
+    [Client 1] Epoch 5/5: Loss=0.0265, Accuracy=99.15%
+Training Client 3...
+    [Client 3] Epoch 1/5: Loss=0.0610, Accuracy=98.39%
+    [Client 3] Epoch 2/5: Loss=0.0370, Accuracy=98.88%
+    [Client 3] Epoch 3/5: Loss=0.0296, Accuracy=99.09%
+    [Client 3] Epoch 4/5: Loss=0.0305, Accuracy=99.07%
+    [Client 3] Epoch 5/5: Loss=0.0239, Accuracy=99.31%
+Training Client 0...
+    [Client 0] Epoch 1/5: Loss=0.0521, Accuracy=98.29%
+    [Client 0] Epoch 2/5: Loss=0.0408, Accuracy=98.87%
+    [Client 0] Epoch 3/5: Loss=0.0253, Accuracy=99.19%
+    [Client 0] Epoch 4/5: Loss=0.0201, Accuracy=99.46%
+    [Client 0] Epoch 5/5: Loss=0.0253, Accuracy=99.24%
+Global (Avg Client): Acc=0.9923, Loss=0.0252
+Clients: Avg Loss=0.0252, Avg Acc=0.9923
+Individual Client Losses: ['0.0265', '0.0239', '0.0253']
+Individual Client Accuracies: ['0.9915', '0.9931', '0.9924']
+Round 8 Result:
+  Selected Clients: [1, 3, 0]
+  Split Layer: 46
+  Selection Method: Random (epsilon=0.708)
+  Epsilon: 0.7076
+  Cluster Loss: 0.0252
+  Delta Loss: -0.0014
+  Rho: 0.6156
+  Reward: 0.0009
+
+--- Round 9/10 ---
+Selected Clients: [3, 2, 0]
+Cluster: Overall=0.683, Variance=0.077
+  Tie detected among actions: [35, 26, 46]
+  Tie-breaking Q-values: {35: np.float64(0.09523787101109822), 26: np.float64(0.027422613153855007), 46: np.float64(0.13151742021242777)}
+  Selected action: 46
+Split: 46 (Voting (votes: {35: 1, 26: 1, 46: 1}, epsilon=0.674))
+Training Client 3...
+    [Client 3] Epoch 1/5: Loss=0.0456, Accuracy=98.63%
+    [Client 3] Epoch 2/5: Loss=0.0280, Accuracy=99.08%
+    [Client 3] Epoch 3/5: Loss=0.0271, Accuracy=99.11%
+    [Client 3] Epoch 4/5: Loss=0.0226, Accuracy=99.35%
+    [Client 3] Epoch 5/5: Loss=0.0242, Accuracy=99.28%
+Training Client 2...
+    [Client 2] Epoch 1/5: Loss=0.0546, Accuracy=98.38%
+    [Client 2] Epoch 2/5: Loss=0.0405, Accuracy=98.73%
+    [Client 2] Epoch 3/5: Loss=0.0374, Accuracy=98.76%
+    [Client 2] Epoch 4/5: Loss=0.0286, Accuracy=99.20%
+    [Client 2] Epoch 5/5: Loss=0.0203, Accuracy=99.45%
+Training Client 0...
+    [Client 0] Epoch 1/5: Loss=0.0409, Accuracy=98.74%
+    [Client 0] Epoch 2/5: Loss=0.0326, Accuracy=98.97%
+    [Client 0] Epoch 3/5: Loss=0.0269, Accuracy=99.18%
+    [Client 0] Epoch 4/5: Loss=0.0237, Accuracy=99.31%
+    [Client 0] Epoch 5/5: Loss=0.0258, Accuracy=99.15%
+Global (Avg Client): Acc=0.9929, Loss=0.0234
+Clients: Avg Loss=0.0234, Avg Acc=0.9929
+Individual Client Losses: ['0.0242', '0.0203', '0.0258']
+Individual Client Accuracies: ['0.9928', '0.9945', '0.9915']
+Round 9 Result:
+  Selected Clients: [3, 2, 0]
+  Split Layer: 46
+  Selection Method: Voting (votes: {35: 1, 26: 1, 46: 1}, epsilon=0.674)
+  Epsilon: 0.6736
+  Cluster Loss: 0.0234
+  Delta Loss: -0.0018
+  Rho: 0.5743
+  Reward: 0.0010
+
+--- Round 10/10 ---
+Selected Clients: [1, 3, 4]
+Cluster: Overall=0.710, Variance=0.150
+  Tie detected among actions: [35, 26, 46]
+  Tie-breaking Q-values: {35: np.float64(0.0955931047598521), 26: np.float64(0.027488028009732563), 46: np.float64(0.13069070130586624)}
+  Selected action: 46
+Split: 46 (Voting (votes: {35: 1, 26: 1, 46: 1}, epsilon=0.641))
+Training Client 1...
+    [Client 1] Epoch 1/5: Loss=0.0584, Accuracy=98.28%
+    [Client 1] Epoch 2/5: Loss=0.0351, Accuracy=99.02%
+    [Client 1] Epoch 3/5: Loss=0.0257, Accuracy=99.21%
+    [Client 1] Epoch 4/5: Loss=0.0252, Accuracy=99.35%
+    [Client 1] Epoch 5/5: Loss=0.0302, Accuracy=99.05%
+Training Client 3...
+    [Client 3] Epoch 1/5: Loss=0.0562, Accuracy=98.28%
+    [Client 3] Epoch 2/5: Loss=0.0280, Accuracy=99.22%
+    [Client 3] Epoch 3/5: Loss=0.0257, Accuracy=99.16%
+    [Client 3] Epoch 4/5: Loss=0.0270, Accuracy=99.14%
+    [Client 3] Epoch 5/5: Loss=0.0277, Accuracy=99.19%
+Training Client 4...
+    [Client 4] Epoch 1/5: Loss=0.0506, Accuracy=98.52%
+    [Client 4] Epoch 2/5: Loss=0.0355, Accuracy=99.07%
+    [Client 4] Epoch 3/5: Loss=0.0342, Accuracy=98.92%
+    [Client 4] Epoch 4/5: Loss=0.0262, Accuracy=99.28%
+    [Client 4] Epoch 5/5: Loss=0.0242, Accuracy=99.25%
+Global (Avg Client): Acc=0.9916, Loss=0.0274
+Clients: Avg Loss=0.0274, Avg Acc=0.9916
+Individual Client Losses: ['0.0302', '0.0277', '0.0242']
+Individual Client Accuracies: ['0.9905', '0.9919', '0.9925']
+Round 10 Result:
+  Selected Clients: [1, 3, 4]
+  Split Layer: 46
+  Selection Method: Voting (votes: {35: 1, 26: 1, 46: 1}, epsilon=0.641)
+  Epsilon: 0.6413
+  Cluster Loss: 0.0274
+  Delta Loss: 0.0040
+  Rho: 0.5359
+  Reward: -0.0021
+   Target networks updated
+
+================================================================================
+Episode 1 Summary:
+  Avg Reward: 0.0153
+  Final Accuracy: 0.9916
+  Avg Split Layer: 41.80
+  Final Epsilon: 0.6105
+================================================================================
+
+ Generating results...
+ Results saved to 'mnist_rl_results.csv'
+ Results saved to 'complete_rl_results_mnist.png'
+
+================================================================================
+TRAINING COMPLETE!
+================================================================================
+
+Final Statistics:
+  Final Accuracy: 0.9916
+  Average Accuracy: 0.9848
+  Average Reward: 0.0153
+  Average Split Layer: 41.80
+  Split Layer Std: 6.87
+  Final Epsilon: 0.6105
+
+Committee Statistics:
+  Committee Size: 3
+  Total Votes: 3
+  Ties Resolved: 3
+
+================================================================================
+ All components successfully integrated and tested!
+================================================================================
+
+
+
+================================================================================
+Experiment 2: FMNIST
+================================================================================
+Started: 2026-01-07 17:06:02.518394
+Completed: 2026-01-07 19:57:43.746948
+Duration: ~2.9 hours
+Estimated: ~35 min
+
+
+Select Model Architecture:
+============================================================
+1: CNN (Baseline)
+2: ResNet50 (Deep Residual Network)
+3: MobileNetV4 (Efficient Mobile Architecture)
+4: ConvNeXt (Modern CNN with Vision Transformer Design)
+============================================================
+Enter model number (1-4): 
+Selected model: ResNet50
+Enter the total number of clients: Model Configuration: Layers=50, Split Range=[25, 49], Action Size=25
+Enter the number of rounds: ================================================================================
+CAPABILITY-AWARE Q-LEARNING FOR SPLIT POINT OPTIMIZATION (FMNIST)
+================================================================================
+
+Configuration:
+  Clients: 5, Selected per round: 3
+  Total layers: 50
+  Rounds per episode: 10, Episodes: 1
+  Use Committee DQN: True (M=3)
+  Use Reward Committee: True
+================================================================================
+
+ Loading and preparing Fashion-MNIST dataset...
+ Dataset prepared: 5 clients with heterogeneous data
+
+Initializing components...
+ Committee DQN initialized (M=3)
+ Reward Committee initialized (M=3)
+
+ Starting training...
+================================================================================
+
+================================================================================
+EPISODE 1/1
+================================================================================
+
+--- Round 1/10 ---
+Selected Clients: [0, 4, 2]
+Cluster: Overall=0.750, Variance=0.129
+Split: 35 (Random (epsilon=1.000))
+Training Client 0...
+    [Client 0] Epoch 1/5: Loss=5.4093, Accuracy=17.36%
+    [Client 0] Epoch 2/5: Loss=1.8422, Accuracy=33.98%
+    [Client 0] Epoch 3/5: Loss=0.9730, Accuracy=67.12%
+    [Client 0] Epoch 4/5: Loss=0.6181, Accuracy=77.55%
+    [Client 0] Epoch 5/5: Loss=0.5571, Accuracy=80.45%
+Training Client 4...
+    [Client 4] Epoch 1/5: Loss=0.4689, Accuracy=83.09%
+    [Client 4] Epoch 2/5: Loss=0.4089, Accuracy=85.12%
+    [Client 4] Epoch 3/5: Loss=0.3612, Accuracy=86.77%
+    [Client 4] Epoch 4/5: Loss=0.3257, Accuracy=88.02%
+    [Client 4] Epoch 5/5: Loss=0.3037, Accuracy=88.38%
+Training Client 2...
+    [Client 2] Epoch 1/5: Loss=0.3457, Accuracy=87.43%
+    [Client 2] Epoch 2/5: Loss=0.2952, Accuracy=88.97%
+    [Client 2] Epoch 3/5: Loss=0.2701, Accuracy=89.69%
+    [Client 2] Epoch 4/5: Loss=0.2539, Accuracy=90.53%
+    [Client 2] Epoch 5/5: Loss=0.2285, Accuracy=91.62%
+Global (Avg Client): Acc=0.8682, Loss=0.3631
+Clients: Avg Loss=0.3631, Avg Acc=0.8682
+Individual Client Losses: ['0.5571', '0.3037', '0.2285']
+Individual Client Accuracies: ['0.8045', '0.8838', '0.9162']
+  (First round: Reward set to 0.0)
+Round 1 Result:
+  Selected Clients: [0, 4, 2]
+  Split Layer: 35
+  Selection Method: Random (epsilon=1.000)
+  Epsilon: 1.0000
+  Cluster Loss: 0.3631
+  Delta Loss: 0.0000
+  Rho: 1.0000
+  Reward: 0.0000
+
+--- Round 2/10 ---
+Selected Clients: [2, 1, 0]
+Cluster: Overall=0.659, Variance=0.084
+Split: 25 (Random (epsilon=0.952))
+Training Client 2...
+    [Client 2] Epoch 1/5: Loss=0.2141, Accuracy=91.79%
+    [Client 2] Epoch 2/5: Loss=0.2183, Accuracy=91.91%
+    [Client 2] Epoch 3/5: Loss=0.1978, Accuracy=92.92%
+    [Client 2] Epoch 4/5: Loss=0.1757, Accuracy=93.66%
+    [Client 2] Epoch 5/5: Loss=0.1765, Accuracy=93.35%
+Training Client 1...
+    [Client 1] Epoch 1/5: Loss=0.3118, Accuracy=89.00%
+    [Client 1] Epoch 2/5: Loss=0.2400, Accuracy=91.38%
+    [Client 1] Epoch 3/5: Loss=0.2057, Accuracy=92.23%
+    [Client 1] Epoch 4/5: Loss=0.1870, Accuracy=92.98%
+    [Client 1] Epoch 5/5: Loss=0.1671, Accuracy=93.83%
+Training Client 0...
+    [Client 0] Epoch 1/5: Loss=0.3041, Accuracy=89.08%
+    [Client 0] Epoch 2/5: Loss=0.2332, Accuracy=91.45%
+    [Client 0] Epoch 3/5: Loss=0.1940, Accuracy=92.88%
+    [Client 0] Epoch 4/5: Loss=0.1883, Accuracy=93.09%
+    [Client 0] Epoch 5/5: Loss=0.1718, Accuracy=93.72%
+Global (Avg Client): Acc=0.9363, Loss=0.1718
+Clients: Avg Loss=0.1718, Avg Acc=0.9363
+Individual Client Losses: ['0.1765', '0.1671', '0.1718']
+Individual Client Accuracies: ['0.9335', '0.9383', '0.9372']
+Round 2 Result:
+  Selected Clients: [2, 1, 0]
+  Split Layer: 25
+  Selection Method: Random (epsilon=0.952)
+  Epsilon: 0.9517
+  Cluster Loss: 0.1718
+  Delta Loss: -0.1913
+  Rho: 0.9330
+  Reward: 0.1785
+
+--- Round 3/10 ---
+Selected Clients: [1, 0, 2]
+Cluster: Overall=0.650, Variance=0.092
+Split: 43 (Random (epsilon=0.906))
+Training Client 1...
+    [Client 1] Epoch 1/5: Loss=0.2290, Accuracy=91.66%
+    [Client 1] Epoch 2/5: Loss=0.2180, Accuracy=92.23%
+    [Client 1] Epoch 3/5: Loss=0.1938, Accuracy=93.37%
+    [Client 1] Epoch 4/5: Loss=0.1583, Accuracy=94.16%
+    [Client 1] Epoch 5/5: Loss=0.1380, Accuracy=95.06%
+Training Client 0...
+    [Client 0] Epoch 1/5: Loss=0.2522, Accuracy=90.71%
+    [Client 0] Epoch 2/5: Loss=0.1794, Accuracy=93.33%
+    [Client 0] Epoch 3/5: Loss=0.1477, Accuracy=94.62%
+    [Client 0] Epoch 4/5: Loss=0.1402, Accuracy=94.73%
+    [Client 0] Epoch 5/5: Loss=0.1288, Accuracy=95.14%
+Training Client 2...
+    [Client 2] Epoch 1/5: Loss=0.2660, Accuracy=90.41%
+    [Client 2] Epoch 2/5: Loss=0.1894, Accuracy=92.88%
+    [Client 2] Epoch 3/5: Loss=0.1611, Accuracy=94.29%
+    [Client 2] Epoch 4/5: Loss=0.1598, Accuracy=93.93%
+    [Client 2] Epoch 5/5: Loss=0.1404, Accuracy=94.90%
+Global (Avg Client): Acc=0.9503, Loss=0.1357
+Clients: Avg Loss=0.1357, Avg Acc=0.9503
+Individual Client Losses: ['0.1380', '0.1288', '0.1404']
+Individual Client Accuracies: ['0.9506', '0.9514', '0.9490']
+Round 3 Result:
+  Selected Clients: [1, 0, 2]
+  Split Layer: 43
+  Selection Method: Random (epsilon=0.906)
+  Epsilon: 0.9058
+  Cluster Loss: 0.1357
+  Delta Loss: -0.0361
+  Rho: 0.8706
+  Reward: 0.0314
+
+--- Round 4/10 ---
+Selected Clients: [4, 0, 2]
+Cluster: Overall=0.744, Variance=0.131
+Split: 49 (Random (epsilon=0.862))
+Training Client 4...
+    [Client 4] Epoch 1/5: Loss=0.2857, Accuracy=89.81%
+    [Client 4] Epoch 2/5: Loss=0.2126, Accuracy=92.47%
+    [Client 4] Epoch 3/5: Loss=0.1804, Accuracy=93.42%
+    [Client 4] Epoch 4/5: Loss=0.1540, Accuracy=94.34%
+    [Client 4] Epoch 5/5: Loss=0.1411, Accuracy=94.82%
+Training Client 0...
+    [Client 0] Epoch 1/5: Loss=0.2386, Accuracy=91.29%
+    [Client 0] Epoch 2/5: Loss=0.1635, Accuracy=93.98%
+    [Client 0] Epoch 3/5: Loss=0.1487, Accuracy=94.58%
+    [Client 0] Epoch 4/5: Loss=0.1372, Accuracy=94.99%
+    [Client 0] Epoch 5/5: Loss=0.1289, Accuracy=95.45%
+Training Client 2...
+    [Client 2] Epoch 1/5: Loss=0.2465, Accuracy=91.13%
+    [Client 2] Epoch 2/5: Loss=0.1737, Accuracy=93.64%
+    [Client 2] Epoch 3/5: Loss=0.1497, Accuracy=94.42%
+    [Client 2] Epoch 4/5: Loss=0.1533, Accuracy=94.62%
+    [Client 2] Epoch 5/5: Loss=0.1354, Accuracy=95.04%
+Global (Avg Client): Acc=0.9510, Loss=0.1351
+Clients: Avg Loss=0.1351, Avg Acc=0.9510
+Individual Client Losses: ['0.1411', '0.1289', '0.1354']
+Individual Client Accuracies: ['0.9482', '0.9545', '0.9504']
+Round 4 Result:
+  Selected Clients: [4, 0, 2]
+  Split Layer: 49
+  Selection Method: Random (epsilon=0.862)
+  Epsilon: 0.8621
+  Cluster Loss: 0.1351
+  Delta Loss: -0.0006
+  Rho: 0.8123
+  Reward: 0.0005
+
+--- Round 5/10 ---
+Selected Clients: [3, 0, 4]
+Cluster: Overall=0.668, Variance=0.125
+  Tie detected among actions: [35, 26, 46]
+  Tie-breaking Q-values: {35: np.float64(0.09569806605577469), 26: np.float64(0.027909617871046066), 46: np.float64(0.1315483326713244)}
+  Selected action: 46
+Split: 46 (Voting (votes: {35: 1, 26: 1, 46: 1}, epsilon=0.821))
+Training Client 3...
+    [Client 3] Epoch 1/5: Loss=0.2784, Accuracy=90.14%
+    [Client 3] Epoch 2/5: Loss=0.2052, Accuracy=92.62%
+    [Client 3] Epoch 3/5: Loss=0.1727, Accuracy=93.55%
+    [Client 3] Epoch 4/5: Loss=0.1722, Accuracy=93.87%
+    [Client 3] Epoch 5/5: Loss=0.1486, Accuracy=94.63%
+Training Client 0...
+    [Client 0] Epoch 1/5: Loss=0.2424, Accuracy=91.31%
+    [Client 0] Epoch 2/5: Loss=0.1669, Accuracy=94.08%
+    [Client 0] Epoch 3/5: Loss=0.1431, Accuracy=94.90%
+    [Client 0] Epoch 4/5: Loss=0.1306, Accuracy=95.23%
+    [Client 0] Epoch 5/5: Loss=0.1143, Accuracy=95.87%
+Training Client 4...
+    [Client 4] Epoch 1/5: Loss=0.2708, Accuracy=90.20%
+    [Client 4] Epoch 2/5: Loss=0.1973, Accuracy=92.85%
+    [Client 4] Epoch 3/5: Loss=0.1560, Accuracy=94.28%
+    [Client 4] Epoch 4/5: Loss=0.1510, Accuracy=94.48%
+    [Client 4] Epoch 5/5: Loss=0.1452, Accuracy=94.71%
+Global (Avg Client): Acc=0.9507, Loss=0.1361
+Clients: Avg Loss=0.1361, Avg Acc=0.9507
+Individual Client Losses: ['0.1486', '0.1143', '0.1452']
+Individual Client Accuracies: ['0.9463', '0.9587', '0.9471']
+Round 5 Result:
+  Selected Clients: [3, 0, 4]
+  Split Layer: 46
+  Selection Method: Voting (votes: {35: 1, 26: 1, 46: 1}, epsilon=0.821)
+  Epsilon: 0.8205
+  Cluster Loss: 0.1361
+  Delta Loss: 0.0009
+  Rho: 0.7579
+  Reward: -0.0007
+   Target networks updated
+
+--- Round 6/10 ---
+Selected Clients: [0, 1, 4]
+Cluster: Overall=0.666, Variance=0.135
+Split: 44 (Random (epsilon=0.781))
+Training Client 0...
+    [Client 0] Epoch 1/5: Loss=0.2057, Accuracy=92.53%
+    [Client 0] Epoch 2/5: Loss=0.1299, Accuracy=95.39%
+    [Client 0] Epoch 3/5: Loss=0.1194, Accuracy=95.70%
+    [Client 0] Epoch 4/5: Loss=0.1080, Accuracy=96.08%
+    [Client 0] Epoch 5/5: Loss=0.1151, Accuracy=95.80%
+Training Client 1...
+    [Client 1] Epoch 1/5: Loss=0.2652, Accuracy=90.64%
+    [Client 1] Epoch 2/5: Loss=0.1884, Accuracy=93.30%
+    [Client 1] Epoch 3/5: Loss=0.1629, Accuracy=94.25%
+    [Client 1] Epoch 4/5: Loss=0.1520, Accuracy=94.38%
+    [Client 1] Epoch 5/5: Loss=0.1272, Accuracy=95.39%
+Training Client 4...
+    [Client 4] Epoch 1/5: Loss=0.2383, Accuracy=91.23%
+    [Client 4] Epoch 2/5: Loss=0.1680, Accuracy=93.83%
+    [Client 4] Epoch 3/5: Loss=0.1434, Accuracy=94.89%
+    [Client 4] Epoch 4/5: Loss=0.1374, Accuracy=95.03%
+    [Client 4] Epoch 5/5: Loss=0.1171, Accuracy=95.63%
+Global (Avg Client): Acc=0.9561, Loss=0.1198
+Clients: Avg Loss=0.1198, Avg Acc=0.9561
+Individual Client Losses: ['0.1151', '0.1272', '0.1171']
+Individual Client Accuracies: ['0.9580', '0.9539', '0.9563']
+Round 6 Result:
+  Selected Clients: [0, 1, 4]
+  Split Layer: 44
+  Selection Method: Random (epsilon=0.781)
+  Epsilon: 0.7810
+  Cluster Loss: 0.1198
+  Delta Loss: -0.0163
+  Rho: 0.7071
+  Reward: 0.0115
+
+--- Round 7/10 ---
+Selected Clients: [4, 0, 2]
+Cluster: Overall=0.750, Variance=0.122
+Split: 38 (Random (epsilon=0.743))
+Training Client 4...
+    [Client 4] Epoch 1/5: Loss=0.0967, Accuracy=96.35%
+    [Client 4] Epoch 2/5: Loss=0.1098, Accuracy=95.98%
+    [Client 4] Epoch 3/5: Loss=0.0941, Accuracy=96.76%
+    [Client 4] Epoch 4/5: Loss=0.0935, Accuracy=96.55%
+    [Client 4] Epoch 5/5: Loss=0.0971, Accuracy=96.58%
+Training Client 0...
+    [Client 0] Epoch 1/5: Loss=0.2446, Accuracy=91.04%
+    [Client 0] Epoch 2/5: Loss=0.1552, Accuracy=94.32%
+    [Client 0] Epoch 3/5: Loss=0.1334, Accuracy=95.17%
+    [Client 0] Epoch 4/5: Loss=0.1135, Accuracy=95.87%
+    [Client 0] Epoch 5/5: Loss=0.1023, Accuracy=96.35%
+Training Client 2...
+    [Client 2] Epoch 1/5: Loss=0.2711, Accuracy=90.07%
+    [Client 2] Epoch 2/5: Loss=0.1761, Accuracy=93.53%
+    [Client 2] Epoch 3/5: Loss=0.1564, Accuracy=94.34%
+    [Client 2] Epoch 4/5: Loss=0.1489, Accuracy=94.77%
+    [Client 2] Epoch 5/5: Loss=0.1299, Accuracy=95.43%
+Global (Avg Client): Acc=0.9612, Loss=0.1098
+Clients: Avg Loss=0.1098, Avg Acc=0.9612
+Individual Client Losses: ['0.0971', '0.1023', '0.1299']
+Individual Client Accuracies: ['0.9657', '0.9635', '0.9543']
+Round 7 Result:
+  Selected Clients: [4, 0, 2]
+  Split Layer: 38
+  Selection Method: Random (epsilon=0.743)
+  Epsilon: 0.7434
+  Cluster Loss: 0.1098
+  Delta Loss: -0.0100
+  Rho: 0.6598
+  Reward: 0.0066
+
+--- Round 8/10 ---
+Selected Clients: [1, 3, 0]
+Cluster: Overall=0.592, Variance=0.020
+Split: 46 (Random (epsilon=0.708))
+Training Client 1...
+    [Client 1] Epoch 1/5: Loss=0.2456, Accuracy=91.17%
+    [Client 1] Epoch 2/5: Loss=0.1669, Accuracy=93.97%
+    [Client 1] Epoch 3/5: Loss=0.1329, Accuracy=95.14%
+    [Client 1] Epoch 4/5: Loss=0.1278, Accuracy=95.25%
+    [Client 1] Epoch 5/5: Loss=0.1193, Accuracy=95.75%
+Training Client 3...
+    [Client 3] Epoch 1/5: Loss=0.2729, Accuracy=90.35%
+    [Client 3] Epoch 2/5: Loss=0.1911, Accuracy=93.08%
+    [Client 3] Epoch 3/5: Loss=0.1638, Accuracy=93.79%
+    [Client 3] Epoch 4/5: Loss=0.1509, Accuracy=94.32%
+    [Client 3] Epoch 5/5: Loss=0.1311, Accuracy=95.27%
+Training Client 0...
+    [Client 0] Epoch 1/5: Loss=0.2276, Accuracy=91.61%
+    [Client 0] Epoch 2/5: Loss=0.1473, Accuracy=94.65%
+    [Client 0] Epoch 3/5: Loss=0.1320, Accuracy=95.29%
+    [Client 0] Epoch 4/5: Loss=0.1073, Accuracy=96.18%
+    [Client 0] Epoch 5/5: Loss=0.1118, Accuracy=95.80%
+Global (Avg Client): Acc=0.9561, Loss=0.1207
+Clients: Avg Loss=0.1207, Avg Acc=0.9561
+Individual Client Losses: ['0.1193', '0.1311', '0.1118']
+Individual Client Accuracies: ['0.9575', '0.9527', '0.9580']
+Round 8 Result:
+  Selected Clients: [1, 3, 0]
+  Split Layer: 46
+  Selection Method: Random (epsilon=0.708)
+  Epsilon: 0.7076
+  Cluster Loss: 0.1207
+  Delta Loss: 0.0109
+  Rho: 0.6156
+  Reward: -0.0067
+
+--- Round 9/10 ---
+Selected Clients: [3, 2, 0]
+Cluster: Overall=0.683, Variance=0.077
+  Tie detected among actions: [35, 26, 46]
+  Tie-breaking Q-values: {35: np.float64(0.09523787101109822), 26: np.float64(0.027422613153855007), 46: np.float64(0.13151742021242777)}
+  Selected action: 46
+Split: 46 (Voting (votes: {35: 1, 26: 1, 46: 1}, epsilon=0.674))
+Training Client 3...
+    [Client 3] Epoch 1/5: Loss=0.2238, Accuracy=91.76%
+    [Client 3] Epoch 2/5: Loss=0.1440, Accuracy=94.61%
+    [Client 3] Epoch 3/5: Loss=0.1187, Accuracy=95.68%
+    [Client 3] Epoch 4/5: Loss=0.1131, Accuracy=95.79%
+    [Client 3] Epoch 5/5: Loss=0.1146, Accuracy=95.73%
+Training Client 2...
+    [Client 2] Epoch 1/5: Loss=0.2601, Accuracy=90.88%
+    [Client 2] Epoch 2/5: Loss=0.1764, Accuracy=93.81%
+    [Client 2] Epoch 3/5: Loss=0.1465, Accuracy=94.63%
+    [Client 2] Epoch 4/5: Loss=0.1359, Accuracy=94.90%
+    [Client 2] Epoch 5/5: Loss=0.1162, Accuracy=95.78%
+Training Client 0...
+    [Client 0] Epoch 1/5: Loss=0.2142, Accuracy=92.47%
+    [Client 0] Epoch 2/5: Loss=0.1417, Accuracy=94.83%
+    [Client 0] Epoch 3/5: Loss=0.1153, Accuracy=95.81%
+    [Client 0] Epoch 4/5: Loss=0.0966, Accuracy=96.57%
+    [Client 0] Epoch 5/5: Loss=0.1038, Accuracy=96.54%
+Global (Avg Client): Acc=0.9602, Loss=0.1115
+Clients: Avg Loss=0.1115, Avg Acc=0.9602
+Individual Client Losses: ['0.1146', '0.1162', '0.1038']
+Individual Client Accuracies: ['0.9573', '0.9578', '0.9654']
+Round 9 Result:
+  Selected Clients: [3, 2, 0]
+  Split Layer: 46
+  Selection Method: Voting (votes: {35: 1, 26: 1, 46: 1}, epsilon=0.674)
+  Epsilon: 0.6736
+  Cluster Loss: 0.1115
+  Delta Loss: -0.0092
+  Rho: 0.5743
+  Reward: 0.0053
+
+--- Round 10/10 ---
+Selected Clients: [1, 3, 4]
+Cluster: Overall=0.710, Variance=0.150
+  Tie detected among actions: [35, 26, 46]
+  Tie-breaking Q-values: {35: np.float64(0.0955931047598521), 26: np.float64(0.027488028009732563), 46: np.float64(0.13069070130586624)}
+  Selected action: 46
+Split: 46 (Voting (votes: {35: 1, 26: 1, 46: 1}, epsilon=0.641))
+Training Client 1...
+    [Client 1] Epoch 1/5: Loss=0.2472, Accuracy=91.36%
+    [Client 1] Epoch 2/5: Loss=0.1607, Accuracy=94.27%
+    [Client 1] Epoch 3/5: Loss=0.1299, Accuracy=95.50%
+    [Client 1] Epoch 4/5: Loss=0.1171, Accuracy=96.03%
+    [Client 1] Epoch 5/5: Loss=0.1078, Accuracy=96.01%
+Training Client 3...
+    [Client 3] Epoch 1/5: Loss=0.2326, Accuracy=91.84%
+    [Client 3] Epoch 2/5: Loss=0.1671, Accuracy=93.92%
+    [Client 3] Epoch 3/5: Loss=0.1360, Accuracy=95.12%
+    [Client 3] Epoch 4/5: Loss=0.1259, Accuracy=95.45%
+    [Client 3] Epoch 5/5: Loss=0.1119, Accuracy=95.88%
+Training Client 4...
+    [Client 4] Epoch 1/5: Loss=0.2635, Accuracy=90.50%
+    [Client 4] Epoch 2/5: Loss=0.1729, Accuracy=93.77%
+    [Client 4] Epoch 3/5: Loss=0.1372, Accuracy=94.90%
+    [Client 4] Epoch 4/5: Loss=0.1314, Accuracy=95.23%
+    [Client 4] Epoch 5/5: Loss=0.1198, Accuracy=95.61%
+Global (Avg Client): Acc=0.9583, Loss=0.1131
+Clients: Avg Loss=0.1131, Avg Acc=0.9583
+Individual Client Losses: ['0.1078', '0.1119', '0.1198']
+Individual Client Accuracies: ['0.9601', '0.9588', '0.9561']
+Round 10 Result:
+  Selected Clients: [1, 3, 4]
+  Split Layer: 46
+  Selection Method: Voting (votes: {35: 1, 26: 1, 46: 1}, epsilon=0.641)
+  Epsilon: 0.6413
+  Cluster Loss: 0.1131
+  Delta Loss: 0.0016
+  Rho: 0.5359
+  Reward: -0.0009
+   Target networks updated
+
+================================================================================
+Episode 1 Summary:
+  Avg Reward: 0.0225
+  Final Accuracy: 0.9583
+  Avg Split Layer: 41.80
+  Final Epsilon: 0.6105
+================================================================================
+
+ Generating results...
+ Results saved to 'fmnist_rl_results.csv'
+ Results saved to 'complete_rl_results_fmnist.png'
+
+================================================================================
+TRAINING COMPLETE!
+================================================================================
+
+Final Statistics:
+  Final Accuracy: 0.9583
+  Average Accuracy: 0.9448
+  Average Reward: 0.0225
+  Average Split Layer: 41.80
+  Split Layer Std: 6.87
+  Final Epsilon: 0.6105
+
+Committee Statistics:
+  Committee Size: 3
+  Total Votes: 3
+  Ties Resolved: 3
+
+================================================================================
+ All components successfully integrated and tested!
+================================================================================
+
+
+
+================================================================================
+Experiment 3: CIFAR-10
+================================================================================
+Started: 2026-01-07 19:57:43.750333
+Completed: 2026-01-08 00:14:53.365463
+Duration: ~4.3 hours
+Estimated: ~2.9 hours
+
+
+Select Model Architecture:
+============================================================
+1: CNN (Baseline)
+2: ResNet50 (Deep Residual Network)
+3: MobileNetV4 (Efficient Mobile Architecture)
+4: ConvNeXt (Modern CNN with Vision Transformer Design)
+============================================================
+Enter model number (1-4): 
+Selected model: ResNet50
+Enter the total number of clients: Model Configuration: Layers=50, Split Range=[25, 49], Action Size=25
+Enter the number of rounds: ================================================================================
+CAPABILITY-AWARE Q-LEARNING FOR SPLIT POINT OPTIMIZATION
+================================================================================
+
+Configuration:
+  Clients: 5, Selected per round: 3
+  Total layers: 50
+  Rounds per episode: 10, Episodes: 1
+  Use Committee DQN: True (M=3)
+  Use Reward Committee: True
+================================================================================
+
+ Loading and preparing CIFAR-10 dataset...
+ Dataset prepared: 5 clients with heterogeneous data
+
+Initializing components...
+ Committee DQN initialized (M=3)
+ Reward Committee initialized (M=3)
+
+ Starting training...
+================================================================================
+
+================================================================================
+EPISODE 1/1
+================================================================================
+
+--- Round 1/10 ---
+Selected Clients: [0, 4, 2]
+Cluster: Overall=0.662, Variance=0.153
+Split: 48 (Random (epsilon=1.000))
+Training Client 0...
+Training Client 4...
+Training Client 2...
+Global (Avg Client): Acc=0.4795, Loss=1.4186
+Clients: Avg Loss=1.4186, Avg Acc=0.4795
+Individual Client Losses: ['1.7141', '1.4224', '1.1192']
+Individual Client Accuracies: ['0.3599', '0.4815', '0.5970']
+  (First round: Reward set to 0.0)
+Round 1 Result:
+  Selected Clients: [0, 4, 2]
+  Split Layer: 48
+  Selection Method: Random (epsilon=1.000)
+  Epsilon: 1.0000
+  Cluster Loss: 1.4186
+  Delta Loss: 0.0000
+  Rho: 1.0000
+  Reward: 0.0000
+
+--- Round 2/10 ---
+Selected Clients: [2, 1, 0]
+Cluster: Overall=0.565, Variance=0.144
+  Tie detected among actions: [49, 31, 40]
+  Tie-breaking Q-values: {49: np.float64(0.09235408529639244), 31: np.float64(0.07780984789133072), 40: np.float64(0.0023593803246816)}
+  Selected action: 49
+Split: 49 (Voting (votes: {49: 1, 31: 1, 40: 1}, epsilon=0.952))
+Training Client 2...
+Training Client 1...
+Training Client 0...
+Global (Avg Client): Acc=0.5380, Loss=1.2831
+Clients: Avg Loss=1.2831, Avg Acc=0.5380
+Individual Client Losses: ['1.5698', '1.2763', '1.0031']
+Individual Client Accuracies: ['0.4311', '0.5354', '0.6475']
+Round 2 Result:
+  Selected Clients: [2, 1, 0]
+  Split Layer: 49
+  Selection Method: Voting (votes: {49: 1, 31: 1, 40: 1}, epsilon=0.952)
+  Epsilon: 0.9517
+  Cluster Loss: 1.2831
+  Delta Loss: -0.1355
+  Rho: 0.9330
+  Reward: 0.1265
+
+--- Round 3/10 ---
+Selected Clients: [1, 0, 2]
+Cluster: Overall=0.573, Variance=0.128
+Split: 49 (Random (epsilon=0.906))
+Training Client 1...
+Training Client 0...
+Training Client 2...
+Global (Avg Client): Acc=0.4007, Loss=1.6207
+Clients: Avg Loss=1.6207, Avg Acc=0.4007
+Individual Client Losses: ['1.9016', '1.5947', '1.3658']
+Individual Client Accuracies: ['0.2844', '0.4117', '0.5061']
+Round 3 Result:
+  Selected Clients: [1, 0, 2]
+  Split Layer: 49
+  Selection Method: Random (epsilon=0.906)
+  Epsilon: 0.9058
+  Cluster Loss: 1.6207
+  Delta Loss: 0.3376
+  Rho: 0.8706
+  Reward: -0.2939
+
+--- Round 4/10 ---
+Selected Clients: [4, 0, 2]
+Cluster: Overall=0.656, Variance=0.142
+Split: 36 (Random (epsilon=0.862))
+Training Client 4...
+Training Client 0...
+Training Client 2...
+Global (Avg Client): Acc=0.4100, Loss=1.5960
+Clients: Avg Loss=1.5960, Avg Acc=0.4100
+Individual Client Losses: ['1.7974', '1.5545', '1.4361']
+Individual Client Accuracies: ['0.3338', '0.4197', '0.4766']
+Round 4 Result:
+  Selected Clients: [4, 0, 2]
+  Split Layer: 36
+  Selection Method: Random (epsilon=0.862)
+  Epsilon: 0.8621
+  Cluster Loss: 1.5960
+  Delta Loss: -0.0247
+  Rho: 0.8123
+  Reward: 0.0200
+
+--- Round 5/10 ---
+Selected Clients: [3, 0, 4]
+Cluster: Overall=0.679, Variance=0.112
+Split: 41 (Random (epsilon=0.821))
+Training Client 3...
+Training Client 0...
+Training Client 4...
+Global (Avg Client): Acc=0.4022, Loss=1.6151
+Clients: Avg Loss=1.6151, Avg Acc=0.4022
+Individual Client Losses: ['1.8422', '1.5717', '1.4315']
+Individual Client Accuracies: ['0.3148', '0.4215', '0.4702']
+Round 5 Result:
+  Selected Clients: [3, 0, 4]
+  Split Layer: 41
+  Selection Method: Random (epsilon=0.821)
+  Epsilon: 0.8205
+  Cluster Loss: 1.6151
+  Delta Loss: 0.0191
+  Rho: 0.7579
+  Reward: -0.0145
+   Target networks updated
+
+--- Round 6/10 ---
+Selected Clients: [0, 1, 4]
+Cluster: Overall=0.677, Variance=0.108
+Split: 25 (Random (epsilon=0.781))
+Training Client 0...
+Training Client 1...
+Training Client 4...
+Global (Avg Client): Acc=0.3739, Loss=1.6985
+Clients: Avg Loss=1.6985, Avg Acc=0.3739
+Individual Client Losses: ['1.9541', '1.6729', '1.4685']
+Individual Client Accuracies: ['0.2705', '0.3848', '0.4665']
+Round 6 Result:
+  Selected Clients: [0, 1, 4]
+  Split Layer: 25
+  Selection Method: Random (epsilon=0.781)
+  Epsilon: 0.7810
+  Cluster Loss: 1.6985
+  Delta Loss: 0.0833
+  Rho: 0.7071
+  Reward: -0.0589
+
+--- Round 7/10 ---
+Selected Clients: [4, 0, 2]
+Cluster: Overall=0.667, Variance=0.132
+  Tie detected among actions: [49, 31, 40]
+  Tie-breaking Q-values: {49: np.float64(0.09054808442791303), 31: np.float64(0.07806988184650739), 40: np.float64(0.0013345777988433838)}
+  Selected action: 49
+Split: 49 (Voting (votes: {49: 1, 31: 1, 40: 1}, epsilon=0.743))
+Training Client 4...
+Training Client 0...
+Training Client 2...
+Global (Avg Client): Acc=0.4695, Loss=1.4459
+Clients: Avg Loss=1.4459, Avg Acc=0.4695
+Individual Client Losses: ['1.6572', '1.4148', '1.2656']
+Individual Client Accuracies: ['0.3853', '0.4860', '0.5372']
+Round 7 Result:
+  Selected Clients: [4, 0, 2]
+  Split Layer: 49
+  Selection Method: Voting (votes: {49: 1, 31: 1, 40: 1}, epsilon=0.743)
+  Epsilon: 0.7434
+  Cluster Loss: 1.4459
+  Delta Loss: -0.2526
+  Rho: 0.6598
+  Reward: 0.1666
+
+--- Round 8/10 ---
+Selected Clients: [1, 3, 0]
+Cluster: Overall=0.589, Variance=0.095
+  Tie detected among actions: [49, 31, 40]
+  Tie-breaking Q-values: {49: np.float64(0.0918685682117939), 31: np.float64(0.07837628200650215), 40: np.float64(0.0021325374643007913)}
+  Selected action: 49
+Split: 49 (Voting (votes: {49: 1, 31: 1, 40: 1}, epsilon=0.708))
+Training Client 1...
+Training Client 3...
+Training Client 0...
+Global (Avg Client): Acc=0.4048, Loss=1.6084
+Clients: Avg Loss=1.6084, Avg Acc=0.4048
+Individual Client Losses: ['1.8078', '1.5496', '1.4677']
+Individual Client Accuracies: ['0.3162', '0.4367', '0.4614']
+Round 8 Result:
+  Selected Clients: [1, 3, 0]
+  Split Layer: 49
+  Selection Method: Voting (votes: {49: 1, 31: 1, 40: 1}, epsilon=0.708)
+  Epsilon: 0.7076
+  Cluster Loss: 1.6084
+  Delta Loss: 0.1625
+  Rho: 0.6156
+  Reward: -0.1000
+
+--- Round 9/10 ---
+Selected Clients: [3, 2, 0]
+Cluster: Overall=0.588, Variance=0.096
+Split: 48 (Random (epsilon=0.674))
+Training Client 3...
+Training Client 2...
+Training Client 0...
+Global (Avg Client): Acc=0.3862, Loss=1.6667
+Clients: Avg Loss=1.6667, Avg Acc=0.3862
+Individual Client Losses: ['1.8640', '1.6398', '1.4962']
+Individual Client Accuracies: ['0.3174', '0.3900', '0.4513']
+Round 9 Result:
+  Selected Clients: [3, 2, 0]
+  Split Layer: 48
+  Selection Method: Random (epsilon=0.674)
+  Epsilon: 0.6736
+  Cluster Loss: 1.6667
+  Delta Loss: 0.0583
+  Rho: 0.5743
+  Reward: -0.0335
+
+--- Round 10/10 ---
+Selected Clients: [1, 3, 4]
+Cluster: Overall=0.619, Variance=0.107
+Split: 25 (Random (epsilon=0.641))
+Training Client 1...
+Training Client 3...
+Training Client 4...
+Global (Avg Client): Acc=0.3351, Loss=1.7666
+Clients: Avg Loss=1.7666, Avg Acc=0.3351
+Individual Client Losses: ['1.9599', '1.7406', '1.5994']
+Individual Client Accuracies: ['0.2556', '0.3438', '0.4060']
+Round 10 Result:
+  Selected Clients: [1, 3, 4]
+  Split Layer: 25
+  Selection Method: Random (epsilon=0.641)
+  Epsilon: 0.6413
+  Cluster Loss: 1.7666
+  Delta Loss: 0.1000
+  Rho: 0.5359
+  Reward: -0.0536
+   Target networks updated
+
+================================================================================
+Episode 1 Summary:
+  Avg Reward: -0.0241
+  Final Accuracy: 0.3351
+  Avg Split Layer: 41.90
+  Final Epsilon: 0.6105
+================================================================================
+
+ Generating results...
+ Results saved to 'complete_rl_results.png'
+
+================================================================================
+TRAINING COMPLETE!
+================================================================================
+
+Final Statistics:
+  Final Accuracy: 0.3351
+  Average Accuracy: 0.4200
+  Average Reward: -0.0241
+  Average Split Layer: 41.90
+  Split Layer Std: 9.40
+  Final Epsilon: 0.6105
+
+Committee Statistics:
+  Committee Size: 3
+  Total Votes: 3
+  Ties Resolved: 3
+
+================================================================================
+ All components successfully integrated and tested!
+================================================================================
+
+
+
+================================================================================
+Experiment 4: CIFAR-100
+================================================================================
+Started: 2026-01-08 00:14:53.369578
+Completed: 2026-01-08 05:45:14.173515
+Duration: ~5.5 hours
+Estimated: ~4.2 hours
+
+
+Select Model Architecture:
+============================================================
+1: CNN (Baseline)
+2: ResNet50 (Deep Residual Network)
+3: MobileNetV4 (Efficient Mobile Architecture)
+4: ConvNeXt (Modern CNN with Vision Transformer Design)
+============================================================
+Enter model number (1-4): 
+Selected model: ResNet50
+Enter the total number of clients: Model Configuration: Layers=50, Split Range=[25, 49], Action Size=25
+Enter the number of rounds: ================================================================================
+CAPABILITY-AWARE Q-LEARNING FOR SPLIT POINT OPTIMIZATION (CIFAR-100)
+================================================================================
+
+Configuration:
+  Clients: 5, Selected per round: 3
+  Total layers: 50
+  Rounds per episode: 10, Episodes: 1
+  Use Committee DQN: True (M=3)
+  Use Reward Committee: True
+================================================================================
+
+ Loading and preparing CIFAR-100 dataset...
+ Dataset prepared: 5 clients with heterogeneous data
+
+Initializing components...
+ Committee DQN initialized (M=3)
+ Reward Committee initialized (M=3)
+
+ Starting training...
+================================================================================
+
+================================================================================
+EPISODE 1/1
+================================================================================
+
+--- Round 1/10 ---
+Selected Clients: [0, 4, 2]
+Cluster: Overall=0.662, Variance=0.153
+Split: 48 (Random (epsilon=1.000))
+Training Client 0...
+  Epoch 1/10: Loss=4.9593, Acc=0.0214
+  Epoch 2/10: Loss=4.2477, Acc=0.0507
+  Epoch 3/10: Loss=4.0322, Acc=0.0722
+  Epoch 4/10: Loss=3.8930, Acc=0.0910
+  Epoch 5/10: Loss=3.7525, Acc=0.1091
+  Epoch 6/10: Loss=3.6284, Acc=0.1241
+  Epoch 7/10: Loss=3.5724, Acc=0.1402
+  Epoch 8/10: Loss=3.4215, Acc=0.1653
+  Epoch 9/10: Loss=3.3040, Acc=0.1880
+  Epoch 10/10: Loss=3.2205, Acc=0.2039
+Training Client 4...
+  Epoch 1/10: Loss=3.2798, Acc=0.2002
+  Epoch 2/10: Loss=3.1933, Acc=0.2104
+  Epoch 3/10: Loss=3.0626, Acc=0.2321
+  Epoch 4/10: Loss=2.9525, Acc=0.2536
+  Epoch 5/10: Loss=2.8331, Acc=0.2770
+  Epoch 6/10: Loss=2.7756, Acc=0.2823
+  Epoch 7/10: Loss=2.6979, Acc=0.3036
+  Epoch 8/10: Loss=2.5987, Acc=0.3237
+  Epoch 9/10: Loss=2.5040, Acc=0.3402
+  Epoch 10/10: Loss=2.4003, Acc=0.3628
+Training Client 2...
+  Epoch 1/10: Loss=2.7892, Acc=0.2930
+  Epoch 2/10: Loss=2.6242, Acc=0.3217
+  Epoch 3/10: Loss=2.5059, Acc=0.3477
+  Epoch 4/10: Loss=2.3885, Acc=0.3685
+  Epoch 5/10: Loss=2.3172, Acc=0.3763
+  Epoch 6/10: Loss=2.2146, Acc=0.3968
+  Epoch 7/10: Loss=2.1910, Acc=0.4131
+  Epoch 8/10: Loss=2.3622, Acc=0.3743
+  Epoch 9/10: Loss=2.1296, Acc=0.4178
+  Epoch 10/10: Loss=2.0667, Acc=0.4304
+
+======================================================================
+ROUND 1 RESULTS
+======================================================================
+Global (Avg Client): Acc=0.3324, Loss=2.5625
+
+Per-Client Metrics:
+Client ID    Loss         Accuracy    
+------------------------------------
+Client 0      3.2205       0.2039      
+Client 4      2.4003       0.3628      
+Client 2      2.0667       0.4304      
+------------------------------------
+Average:     2.5625       0.3324      
+======================================================================
+
+  (First round: Reward set to 0.0)
+Round 1 Result:
+  Selected Clients: [0, 4, 2]
+  Split Layer: 48
+  Selection Method: Random (epsilon=1.000)
+  Epsilon: 1.0000
+  Cluster Loss: 2.5625
+  Delta Loss: 0.0000
+  Rho: 1.0000
+  Reward: 0.0000
+
+--- Round 2/10 ---
+Selected Clients: [2, 1, 0]
+Cluster: Overall=0.565, Variance=0.144
+Split: 29 (Voting (votes: {29: 2, 37: 1}, epsilon=0.952))
+Training Client 2...
+  Epoch 1/10: Loss=1.6518, Acc=0.5418
+  Epoch 2/10: Loss=1.6013, Acc=0.5459
+  Epoch 3/10: Loss=1.5120, Acc=0.5677
+  Epoch 4/10: Loss=1.4911, Acc=0.5767
+  Epoch 5/10: Loss=1.3894, Acc=0.5994
+  Epoch 6/10: Loss=1.3066, Acc=0.6159
+  Epoch 7/10: Loss=1.2772, Acc=0.6277
+  Epoch 8/10: Loss=1.2228, Acc=0.6366
+  Epoch 9/10: Loss=1.1714, Acc=0.6555
+  Epoch 10/10: Loss=1.1156, Acc=0.6731
+Training Client 1...
+  Epoch 1/10: Loss=2.4823, Acc=0.3698
+  Epoch 2/10: Loss=2.1545, Acc=0.4295
+  Epoch 3/10: Loss=2.0280, Acc=0.4527
+  Epoch 4/10: Loss=1.8881, Acc=0.4849
+  Epoch 5/10: Loss=1.8661, Acc=0.4886
+  Epoch 6/10: Loss=1.7869, Acc=0.5038
+  Epoch 7/10: Loss=1.6849, Acc=0.5308
+  Epoch 8/10: Loss=1.6092, Acc=0.5468
+  Epoch 9/10: Loss=1.5423, Acc=0.5601
+  Epoch 10/10: Loss=1.4740, Acc=0.5798
+Training Client 0...
+  Epoch 1/10: Loss=2.1718, Acc=0.4258
+  Epoch 2/10: Loss=1.9989, Acc=0.4581
+  Epoch 3/10: Loss=1.8723, Acc=0.4873
+  Epoch 4/10: Loss=1.7611, Acc=0.5089
+  Epoch 5/10: Loss=1.7255, Acc=0.5167
+  Epoch 6/10: Loss=1.6056, Acc=0.5503
+  Epoch 7/10: Loss=1.5478, Acc=0.5587
+  Epoch 8/10: Loss=1.4286, Acc=0.5849
+  Epoch 9/10: Loss=1.3258, Acc=0.6219
+  Epoch 10/10: Loss=1.2984, Acc=0.6237
+
+======================================================================
+ROUND 2 RESULTS
+======================================================================
+Global (Avg Client): Acc=0.6255, Loss=1.2960
+
+Per-Client Metrics:
+Client ID    Loss         Accuracy    
+------------------------------------
+Client 2      1.1156       0.6731      
+Client 1      1.4740       0.5798      
+Client 0      1.2984       0.6237      
+------------------------------------
+Average:     1.2960       0.6255      
+======================================================================
+
+Round 2 Result:
+  Selected Clients: [2, 1, 0]
+  Split Layer: 29
+  Selection Method: Voting (votes: {29: 2, 37: 1}, epsilon=0.952)
+  Epsilon: 0.9517
+  Cluster Loss: 1.2960
+  Delta Loss: -1.2665
+  Rho: 0.9330
+  Reward: 1.1817
+
+--- Round 3/10 ---
+Selected Clients: [1, 0, 2]
+Cluster: Overall=0.573, Variance=0.128
+Split: 49 (Random (epsilon=0.906))
+Training Client 1...
+  Epoch 1/10: Loss=2.1629, Acc=0.4123
+  Epoch 2/10: Loss=1.9790, Acc=0.4564
+  Epoch 3/10: Loss=1.8918, Acc=0.4776
+  Epoch 4/10: Loss=1.7930, Acc=0.4966
+  Epoch 5/10: Loss=1.7013, Acc=0.5216
+  Epoch 6/10: Loss=1.6122, Acc=0.5390
+  Epoch 7/10: Loss=1.5620, Acc=0.5567
+  Epoch 8/10: Loss=1.4662, Acc=0.5789
+  Epoch 9/10: Loss=1.4481, Acc=0.5787
+  Epoch 10/10: Loss=1.3818, Acc=0.6055
+Training Client 0...
+  Epoch 1/10: Loss=2.1505, Acc=0.4296
+  Epoch 2/10: Loss=1.9266, Acc=0.4748
+  Epoch 3/10: Loss=1.7421, Acc=0.5105
+  Epoch 4/10: Loss=1.6813, Acc=0.5298
+  Epoch 5/10: Loss=1.5633, Acc=0.5540
+  Epoch 6/10: Loss=1.4819, Acc=0.5816
+  Epoch 7/10: Loss=1.4762, Acc=0.5822
+  Epoch 8/10: Loss=1.4113, Acc=0.5935
+  Epoch 9/10: Loss=1.3795, Acc=0.6039
+  Epoch 10/10: Loss=1.3382, Acc=0.6121
+Training Client 2...
+  Epoch 1/10: Loss=2.1041, Acc=0.4381
+  Epoch 2/10: Loss=1.7874, Acc=0.5003
+  Epoch 3/10: Loss=1.6532, Acc=0.5365
+  Epoch 4/10: Loss=1.5462, Acc=0.5634
+  Epoch 5/10: Loss=1.5023, Acc=0.5733
+  Epoch 6/10: Loss=1.4122, Acc=0.5939
+  Epoch 7/10: Loss=1.3598, Acc=0.6036
+  Epoch 8/10: Loss=1.3393, Acc=0.6065
+  Epoch 9/10: Loss=1.3426, Acc=0.6118
+  Epoch 10/10: Loss=1.2891, Acc=0.6214
+
+======================================================================
+ROUND 3 RESULTS
+======================================================================
+Global (Avg Client): Acc=0.6130, Loss=1.3364
+
+Per-Client Metrics:
+Client ID    Loss         Accuracy    
+------------------------------------
+Client 1      1.3818       0.6055      
+Client 0      1.3382       0.6121      
+Client 2      1.2891       0.6214      
+------------------------------------
+Average:     1.3364       0.6130      
+======================================================================
+
+Round 3 Result:
+  Selected Clients: [1, 0, 2]
+  Split Layer: 49
+  Selection Method: Random (epsilon=0.906)
+  Epsilon: 0.9058
+  Cluster Loss: 1.3364
+  Delta Loss: 0.0404
+  Rho: 0.8706
+  Reward: -0.0351
+
+--- Round 4/10 ---
+Selected Clients: [4, 0, 2]
+Cluster: Overall=0.656, Variance=0.142
+Split: 36 (Random (epsilon=0.862))
+Training Client 4...
+  Epoch 1/10: Loss=2.1299, Acc=0.4404
+  Epoch 2/10: Loss=1.9001, Acc=0.4862
+  Epoch 3/10: Loss=1.7633, Acc=0.5108
+  Epoch 4/10: Loss=1.6285, Acc=0.5465
+  Epoch 5/10: Loss=1.5339, Acc=0.5625
+  Epoch 6/10: Loss=1.4636, Acc=0.5839
+  Epoch 7/10: Loss=1.4189, Acc=0.5995
+  Epoch 8/10: Loss=1.3802, Acc=0.6096
+  Epoch 9/10: Loss=1.3517, Acc=0.6120
+  Epoch 10/10: Loss=1.2408, Acc=0.6398
+Training Client 0...
+  Epoch 1/10: Loss=1.6698, Acc=0.5313
+  Epoch 2/10: Loss=1.4814, Acc=0.5790
+  Epoch 3/10: Loss=1.3208, Acc=0.6186
+  Epoch 4/10: Loss=1.2478, Acc=0.6410
+  Epoch 5/10: Loss=1.1641, Acc=0.6609
+  Epoch 6/10: Loss=1.0476, Acc=0.6986
+  Epoch 7/10: Loss=1.0020, Acc=0.7048
+  Epoch 8/10: Loss=0.9340, Acc=0.7239
+  Epoch 9/10: Loss=0.9100, Acc=0.7317
+  Epoch 10/10: Loss=0.8286, Acc=0.7533
+Training Client 2...
+  Epoch 1/10: Loss=1.2283, Acc=0.6415
+  Epoch 2/10: Loss=0.9413, Acc=0.7197
+  Epoch 3/10: Loss=0.8093, Acc=0.7578
+  Epoch 4/10: Loss=0.7578, Acc=0.7778
+  Epoch 5/10: Loss=0.6526, Acc=0.8057
+  Epoch 6/10: Loss=0.5758, Acc=0.8360
+  Epoch 7/10: Loss=0.5584, Acc=0.8354
+  Epoch 8/10: Loss=0.5224, Acc=0.8480
+  Epoch 9/10: Loss=0.5298, Acc=0.8468
+  Epoch 10/10: Loss=0.4591, Acc=0.8707
+
+======================================================================
+ROUND 4 RESULTS
+======================================================================
+Global (Avg Client): Acc=0.7546, Loss=0.8428
+
+Per-Client Metrics:
+Client ID    Loss         Accuracy    
+------------------------------------
+Client 4      1.2408       0.6398      
+Client 0      0.8286       0.7533      
+Client 2      0.4591       0.8707      
+------------------------------------
+Average:     0.8428       0.7546      
+======================================================================
+
+Round 4 Result:
+  Selected Clients: [4, 0, 2]
+  Split Layer: 36
+  Selection Method: Random (epsilon=0.862)
+  Epsilon: 0.8621
+  Cluster Loss: 0.8428
+  Delta Loss: -0.4935
+  Rho: 0.8123
+  Reward: 0.4009
+
+--- Round 5/10 ---
+Selected Clients: [3, 0, 4]
+Cluster: Overall=0.679, Variance=0.112
+Split: 41 (Random (epsilon=0.821))
+Training Client 3...
+  Epoch 1/10: Loss=2.4739, Acc=0.3819
+  Epoch 2/10: Loss=1.9607, Acc=0.4681
+  Epoch 3/10: Loss=1.7105, Acc=0.5270
+  Epoch 4/10: Loss=1.6146, Acc=0.5530
+  Epoch 5/10: Loss=1.5325, Acc=0.5723
+  Epoch 6/10: Loss=1.4245, Acc=0.5960
+  Epoch 7/10: Loss=1.3404, Acc=0.6147
+  Epoch 8/10: Loss=1.2511, Acc=0.6390
+  Epoch 9/10: Loss=1.1889, Acc=0.6574
+  Epoch 10/10: Loss=1.1751, Acc=0.6602
+Training Client 0...
+  Epoch 1/10: Loss=1.7701, Acc=0.5024
+  Epoch 2/10: Loss=1.4584, Acc=0.5803
+  Epoch 3/10: Loss=1.2718, Acc=0.6301
+  Epoch 4/10: Loss=1.1125, Acc=0.6690
+  Epoch 5/10: Loss=1.0729, Acc=0.6849
+  Epoch 6/10: Loss=0.9363, Acc=0.7213
+  Epoch 7/10: Loss=0.8870, Acc=0.7357
+  Epoch 8/10: Loss=0.8506, Acc=0.7473
+  Epoch 9/10: Loss=0.7936, Acc=0.7580
+  Epoch 10/10: Loss=0.7697, Acc=0.7651
+Training Client 4...
+  Epoch 1/10: Loss=2.2058, Acc=0.4315
+  Epoch 2/10: Loss=1.7346, Acc=0.5217
+  Epoch 3/10: Loss=1.5579, Acc=0.5605
+  Epoch 4/10: Loss=1.3917, Acc=0.6014
+  Epoch 5/10: Loss=1.2502, Acc=0.6395
+  Epoch 6/10: Loss=1.2165, Acc=0.6449
+  Epoch 7/10: Loss=1.1311, Acc=0.6680
+  Epoch 8/10: Loss=1.1396, Acc=0.6668
+  Epoch 9/10: Loss=1.0293, Acc=0.6935
+  Epoch 10/10: Loss=0.9439, Acc=0.7155
+
+======================================================================
+ROUND 5 RESULTS
+======================================================================
+Global (Avg Client): Acc=0.7136, Loss=0.9629
+
+Per-Client Metrics:
+Client ID    Loss         Accuracy    
+------------------------------------
+Client 3      1.1751       0.6602      
+Client 0      0.7697       0.7651      
+Client 4      0.9439       0.7155      
+------------------------------------
+Average:     0.9629       0.7136      
+======================================================================
+
+Round 5 Result:
+  Selected Clients: [3, 0, 4]
+  Split Layer: 41
+  Selection Method: Random (epsilon=0.821)
+  Epsilon: 0.8205
+  Cluster Loss: 0.9629
+  Delta Loss: 0.1201
+  Rho: 0.7579
+  Reward: -0.0910
+   Target networks updated
+
+--- Round 6/10 ---
+Selected Clients: [0, 1, 4]
+Cluster: Overall=0.677, Variance=0.108
+Split: 25 (Random (epsilon=0.781))
+Training Client 0...
+  Epoch 1/10: Loss=1.2636, Acc=0.6230
+  Epoch 2/10: Loss=0.9896, Acc=0.7037
+  Epoch 3/10: Loss=0.8415, Acc=0.7478
+  Epoch 4/10: Loss=0.6706, Acc=0.8012
+  Epoch 5/10: Loss=0.5960, Acc=0.8306
+  Epoch 6/10: Loss=0.5502, Acc=0.8417
+  Epoch 7/10: Loss=0.4490, Acc=0.8764
+  Epoch 8/10: Loss=0.3976, Acc=0.8956
+  Epoch 9/10: Loss=0.3943, Acc=0.8898
+  Epoch 10/10: Loss=0.3513, Acc=0.9043
+Training Client 1...
+  Epoch 1/10: Loss=2.0959, Acc=0.4768
+  Epoch 2/10: Loss=1.5524, Acc=0.5580
+  Epoch 3/10: Loss=1.3090, Acc=0.6243
+  Epoch 4/10: Loss=1.1346, Acc=0.6619
+  Epoch 5/10: Loss=1.0114, Acc=0.6999
+  Epoch 6/10: Loss=0.8918, Acc=0.7340
+  Epoch 7/10: Loss=0.8487, Acc=0.7512
+  Epoch 8/10: Loss=0.7284, Acc=0.7902
+  Epoch 9/10: Loss=0.6257, Acc=0.8187
+  Epoch 10/10: Loss=0.6178, Acc=0.8218
+Training Client 4...
+  Epoch 1/10: Loss=1.4816, Acc=0.5801
+  Epoch 2/10: Loss=1.0327, Acc=0.6953
+  Epoch 3/10: Loss=0.8097, Acc=0.7574
+  Epoch 4/10: Loss=0.6585, Acc=0.8055
+  Epoch 5/10: Loss=0.6283, Acc=0.8149
+  Epoch 6/10: Loss=0.5126, Acc=0.8443
+  Epoch 7/10: Loss=0.4978, Acc=0.8526
+  Epoch 8/10: Loss=0.3692, Acc=0.8999
+  Epoch 9/10: Loss=0.3444, Acc=0.9028
+  Epoch 10/10: Loss=0.3455, Acc=0.9045
+
+======================================================================
+ROUND 6 RESULTS
+======================================================================
+Global (Avg Client): Acc=0.8769, Loss=0.4382
+
+Per-Client Metrics:
+Client ID    Loss         Accuracy    
+------------------------------------
+Client 0      0.3513       0.9043      
+Client 1      0.6178       0.8218      
+Client 4      0.3455       0.9045      
+------------------------------------
+Average:     0.4382       0.8769      
+======================================================================
+
+Round 6 Result:
+  Selected Clients: [0, 1, 4]
+  Split Layer: 25
+  Selection Method: Random (epsilon=0.781)
+  Epsilon: 0.7810
+  Cluster Loss: 0.4382
+  Delta Loss: -0.5247
+  Rho: 0.7071
+  Reward: 0.3710
+
+--- Round 7/10 ---
+Selected Clients: [4, 0, 2]
+Cluster: Overall=0.667, Variance=0.132
+Split: 29 (Voting (votes: {29: 2, 37: 1}, epsilon=0.743))
+Training Client 4...
+  Epoch 1/10: Loss=0.4108, Acc=0.8806
+  Epoch 2/10: Loss=0.5422, Acc=0.8383
+  Epoch 3/10: Loss=0.4894, Acc=0.8590
+  Epoch 4/10: Loss=0.4249, Acc=0.8776
+  Epoch 5/10: Loss=0.3224, Acc=0.9092
+  Epoch 6/10: Loss=0.3395, Acc=0.9042
+  Epoch 7/10: Loss=0.2510, Acc=0.9349
+  Epoch 8/10: Loss=0.3550, Acc=0.9019
+  Epoch 9/10: Loss=0.4432, Acc=0.8694
+  Epoch 10/10: Loss=0.3176, Acc=0.9106
+Training Client 0...
+  Epoch 1/10: Loss=1.5701, Acc=0.5593
+  Epoch 2/10: Loss=0.9751, Acc=0.7013
+  Epoch 3/10: Loss=0.7120, Acc=0.7835
+  Epoch 4/10: Loss=0.5645, Acc=0.8304
+  Epoch 5/10: Loss=0.4440, Acc=0.8695
+  Epoch 6/10: Loss=0.3772, Acc=0.8899
+  Epoch 7/10: Loss=0.3693, Acc=0.8916
+  Epoch 8/10: Loss=0.2957, Acc=0.9197
+  Epoch 9/10: Loss=0.3269, Acc=0.9079
+  Epoch 10/10: Loss=0.3089, Acc=0.9126
+Training Client 2...
+  Epoch 1/10: Loss=2.0256, Acc=0.4817
+  Epoch 2/10: Loss=1.3765, Acc=0.6023
+  Epoch 3/10: Loss=1.0683, Acc=0.6861
+  Epoch 4/10: Loss=0.9185, Acc=0.7268
+  Epoch 5/10: Loss=0.7495, Acc=0.7699
+  Epoch 6/10: Loss=0.6341, Acc=0.8119
+  Epoch 7/10: Loss=0.5955, Acc=0.8224
+  Epoch 8/10: Loss=0.4969, Acc=0.8561
+  Epoch 9/10: Loss=0.4283, Acc=0.8766
+  Epoch 10/10: Loss=0.3547, Acc=0.9041
+
+======================================================================
+ROUND 7 RESULTS
+======================================================================
+Global (Avg Client): Acc=0.9091, Loss=0.3271
+
+Per-Client Metrics:
+Client ID    Loss         Accuracy    
+------------------------------------
+Client 4      0.3176       0.9106      
+Client 0      0.3089       0.9126      
+Client 2      0.3547       0.9041      
+------------------------------------
+Average:     0.3271       0.9091      
+======================================================================
+
+Round 7 Result:
+  Selected Clients: [4, 0, 2]
+  Split Layer: 29
+  Selection Method: Voting (votes: {29: 2, 37: 1}, epsilon=0.743)
+  Epsilon: 0.7434
+  Cluster Loss: 0.3271
+  Delta Loss: -0.1111
+  Rho: 0.6598
+  Reward: 0.0733
+
+--- Round 8/10 ---
+Selected Clients: [1, 3, 0]
+Cluster: Overall=0.589, Variance=0.095
+Split: 29 (Voting (votes: {29: 2, 37: 1}, epsilon=0.708))
+Training Client 1...
+  Epoch 1/10: Loss=1.7315, Acc=0.5338
+  Epoch 2/10: Loss=1.2670, Acc=0.6269
+  Epoch 3/10: Loss=0.9646, Acc=0.7073
+  Epoch 4/10: Loss=0.7992, Acc=0.7601
+  Epoch 5/10: Loss=0.6748, Acc=0.8012
+  Epoch 6/10: Loss=0.6325, Acc=0.8118
+  Epoch 7/10: Loss=0.5303, Acc=0.8428
+  Epoch 8/10: Loss=0.5040, Acc=0.8553
+  Epoch 9/10: Loss=0.4435, Acc=0.8728
+  Epoch 10/10: Loss=0.3479, Acc=0.9049
+Training Client 3...
+  Epoch 1/10: Loss=2.0739, Acc=0.4794
+  Epoch 2/10: Loss=1.4857, Acc=0.5802
+  Epoch 3/10: Loss=1.2288, Acc=0.6433
+  Epoch 4/10: Loss=1.0281, Acc=0.7060
+  Epoch 5/10: Loss=0.9097, Acc=0.7312
+  Epoch 6/10: Loss=0.8359, Acc=0.7520
+  Epoch 7/10: Loss=0.6657, Acc=0.8078
+  Epoch 8/10: Loss=0.5574, Acc=0.8389
+  Epoch 9/10: Loss=0.5101, Acc=0.8531
+  Epoch 10/10: Loss=0.5093, Acc=0.8508
+Training Client 0...
+  Epoch 1/10: Loss=1.3834, Acc=0.6074
+  Epoch 2/10: Loss=0.9143, Acc=0.7202
+  Epoch 3/10: Loss=0.6213, Acc=0.8091
+  Epoch 4/10: Loss=0.4681, Acc=0.8602
+  Epoch 5/10: Loss=0.3366, Acc=0.9037
+  Epoch 6/10: Loss=0.2844, Acc=0.9232
+  Epoch 7/10: Loss=0.2586, Acc=0.9283
+  Epoch 8/10: Loss=0.2027, Acc=0.9467
+  Epoch 9/10: Loss=0.2119, Acc=0.9449
+  Epoch 10/10: Loss=0.1754, Acc=0.9577
+
+======================================================================
+ROUND 8 RESULTS
+======================================================================
+Global (Avg Client): Acc=0.9045, Loss=0.3442
+
+Per-Client Metrics:
+Client ID    Loss         Accuracy    
+------------------------------------
+Client 1      0.3479       0.9049      
+Client 3      0.5093       0.8508      
+Client 0      0.1754       0.9577      
+------------------------------------
+Average:     0.3442       0.9045      
+======================================================================
+
+Round 8 Result:
+  Selected Clients: [1, 3, 0]
+  Split Layer: 29
+  Selection Method: Voting (votes: {29: 2, 37: 1}, epsilon=0.708)
+  Epsilon: 0.7076
+  Cluster Loss: 0.3442
+  Delta Loss: 0.0171
+  Rho: 0.6156
+  Reward: -0.0105
+
+--- Round 9/10 ---
+Selected Clients: [3, 2, 0]
+Cluster: Overall=0.588, Variance=0.096
+Split: 48 (Random (epsilon=0.674))
+Training Client 3...
+  Epoch 1/10: Loss=2.1967, Acc=0.4245
+  Epoch 2/10: Loss=1.7854, Acc=0.5096
+  Epoch 3/10: Loss=1.6105, Acc=0.5479
+  Epoch 4/10: Loss=1.5047, Acc=0.5735
+  Epoch 5/10: Loss=1.4001, Acc=0.5957
+  Epoch 6/10: Loss=1.3155, Acc=0.6197
+  Epoch 7/10: Loss=1.2154, Acc=0.6476
+  Epoch 8/10: Loss=1.1934, Acc=0.6457
+  Epoch 9/10: Loss=1.2029, Acc=0.6447
+  Epoch 10/10: Loss=1.0343, Acc=0.6955
+Training Client 2...
+  Epoch 1/10: Loss=1.9215, Acc=0.4748
+  Epoch 2/10: Loss=1.5668, Acc=0.5537
+  Epoch 3/10: Loss=1.3989, Acc=0.5982
+  Epoch 4/10: Loss=1.3350, Acc=0.6134
+  Epoch 5/10: Loss=1.1890, Acc=0.6507
+  Epoch 6/10: Loss=1.2133, Acc=0.6422
+  Epoch 7/10: Loss=1.1138, Acc=0.6725
+  Epoch 8/10: Loss=1.0733, Acc=0.6805
+  Epoch 9/10: Loss=0.9662, Acc=0.7082
+  Epoch 10/10: Loss=0.9945, Acc=0.7077
+Training Client 0...
+  Epoch 1/10: Loss=1.8364, Acc=0.4930
+  Epoch 2/10: Loss=1.4364, Acc=0.5939
+  Epoch 3/10: Loss=1.3665, Acc=0.6084
+  Epoch 4/10: Loss=1.2101, Acc=0.6462
+  Epoch 5/10: Loss=1.1705, Acc=0.6549
+  Epoch 6/10: Loss=1.0777, Acc=0.6789
+  Epoch 7/10: Loss=1.0229, Acc=0.6922
+  Epoch 8/10: Loss=1.0300, Acc=0.6910
+  Epoch 9/10: Loss=1.0214, Acc=0.6901
+  Epoch 10/10: Loss=0.9147, Acc=0.7198
+
+======================================================================
+ROUND 9 RESULTS
+======================================================================
+Global (Avg Client): Acc=0.7077, Loss=0.9812
+
+Per-Client Metrics:
+Client ID    Loss         Accuracy    
+------------------------------------
+Client 3      1.0343       0.6955      
+Client 2      0.9945       0.7077      
+Client 0      0.9147       0.7198      
+------------------------------------
+Average:     0.9812       0.7077      
+======================================================================
+
+Round 9 Result:
+  Selected Clients: [3, 2, 0]
+  Split Layer: 48
+  Selection Method: Random (epsilon=0.674)
+  Epsilon: 0.6736
+  Cluster Loss: 0.9812
+  Delta Loss: 0.6370
+  Rho: 0.5743
+  Reward: -0.3658
+
+--- Round 10/10 ---
+Selected Clients: [1, 3, 4]
+Cluster: Overall=0.619, Variance=0.107
+Split: 25 (Random (epsilon=0.641))
+Training Client 1...
+  Epoch 1/10: Loss=1.8653, Acc=0.5123
+  Epoch 2/10: Loss=1.5989, Acc=0.5574
+  Epoch 3/10: Loss=1.3978, Acc=0.5970
+  Epoch 4/10: Loss=1.2652, Acc=0.6368
+  Epoch 5/10: Loss=1.1680, Acc=0.6582
+  Epoch 6/10: Loss=1.0984, Acc=0.6824
+  Epoch 7/10: Loss=1.0584, Acc=0.6931
+  Epoch 8/10: Loss=1.0081, Acc=0.7016
+  Epoch 9/10: Loss=0.9281, Acc=0.7266
+  Epoch 10/10: Loss=0.8791, Acc=0.7376
+Training Client 3...
+  Epoch 1/10: Loss=1.5730, Acc=0.5671
+  Epoch 2/10: Loss=1.3357, Acc=0.6186
+  Epoch 3/10: Loss=1.1638, Acc=0.6604
+  Epoch 4/10: Loss=1.0713, Acc=0.6885
+  Epoch 5/10: Loss=0.9460, Acc=0.7213
+  Epoch 6/10: Loss=0.8851, Acc=0.7373
+  Epoch 7/10: Loss=0.8127, Acc=0.7580
+  Epoch 8/10: Loss=0.7486, Acc=0.7770
+  Epoch 9/10: Loss=0.6756, Acc=0.8018
+  Epoch 10/10: Loss=0.6268, Acc=0.8170
+Training Client 4...
+  Epoch 1/10: Loss=1.7643, Acc=0.5264
+  Epoch 2/10: Loss=1.4579, Acc=0.5856
+  Epoch 3/10: Loss=1.2728, Acc=0.6334
+  Epoch 4/10: Loss=1.1529, Acc=0.6619
+  Epoch 5/10: Loss=1.0524, Acc=0.6954
+  Epoch 6/10: Loss=0.9712, Acc=0.7125
+  Epoch 7/10: Loss=0.8624, Acc=0.7479
+  Epoch 8/10: Loss=0.8092, Acc=0.7604
+  Epoch 9/10: Loss=0.7312, Acc=0.7817
+  Epoch 10/10: Loss=0.6681, Acc=0.8030
+
+======================================================================
+ROUND 10 RESULTS
+======================================================================
+Global (Avg Client): Acc=0.7859, Loss=0.7247
+
+Per-Client Metrics:
+Client ID    Loss         Accuracy    
+------------------------------------
+Client 1      0.8791       0.7376      
+Client 3      0.6268       0.8170      
+Client 4      0.6681       0.8030      
+------------------------------------
+Average:     0.7247       0.7859      
+======================================================================
+
+Round 10 Result:
+  Selected Clients: [1, 3, 4]
+  Split Layer: 25
+  Selection Method: Random (epsilon=0.641)
+  Epsilon: 0.6413
+  Cluster Loss: 0.7247
+  Delta Loss: -0.2565
+  Rho: 0.5359
+  Reward: 0.1375
+   Target networks updated
+
+================================================================================
+Episode 1 Summary:
+  Avg Reward: 0.1662
+  Final Accuracy: 0.7859
+  Avg Split Layer: 35.90
+  Final Epsilon: 0.6105
+================================================================================
+
+ Generating results...
+ Results saved to 'complete_rl_results_cifar100.png'
+
+================================================================================
+TRAINING COMPLETE!
+================================================================================
+
+Final Statistics:
+  Final Accuracy: 0.7859
+  Average Accuracy: 0.7223
+  Average Reward: 0.1662
+  Average Split Layer: 35.90
+  Split Layer Std: 9.33
+  Final Epsilon: 0.6105
+
+Committee Statistics:
+  Committee Size: 3
+  Total Votes: 3
+  Ties Resolved: 0
+
+================================================================================
+ All components successfully integrated and tested!
+================================================================================
+
+
+
+================================================================================
+FINAL SUMMARY
+================================================================================
+Model: ResNet50
+Completed: 2026-01-08 05:45:14.178069
+
+Results:
+--------------------------------------------------------------------------------
+MNIST: SUCCESS - Clients: 5, Rounds: 10, Accuracy: 99.16%, Time: ~2.8 hours
+FMNIST: SUCCESS - Clients: 5, Rounds: 10, Accuracy: 95.83%, Time: ~2.9 hours
+CIFAR-10: SUCCESS - Clients: 5, Rounds: 10, Accuracy: 33.51%, Time: ~4.3 hours
+CIFAR-100: SUCCESS - Clients: 5, Rounds: 10, Accuracy: 78.59%, Time: ~5.5 hours

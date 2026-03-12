@@ -1,0 +1,82 @@
+
+For each dataset: FMNIST, MNIST, CIFAR-10, CIFAR-100:
+
+For each training scheme: centralized, FedAvg, FedProx, RL+split learning
+
+For each model: CNN, MobileNetv4, ResNet50, ConvNexT
+
+For each client count: 5, 10, 100, 200
+
+For each rounds setting: 10, 20, 50, 100
+
+Compact baseline experiments:
+
+Centralized vs FedAvg vs FedProx vs split learning vs RL+split learning, same model, same dataset, clients = 100, rounds = 50
+
+Model comparison per dataset:
+
+Fix scheme = centralized, clients irrelevant
+
+Run all models on each dataset for rounds = 100
+
+Report accuracy, loss, 
+
+Scalability Check:
+
+Fix dataset and model
+
+Vary clients = 5, 10, 100, 200
+
+Use FedAvg and FedProx
+
+Use rounds = 50 and 100
+
+Measure convergence speed and communication cost
+
+Rounds sensitivity
+
+Fix dataset, model, clients
+
+Run rounds = 10, 20, 50, 100
+
+Compare final accuracy and rounds-to-threshold
+
+Non-IID degree experiments
+
+Create label-skew and feature-skew splits
+
+For each skew level, run FedAvg, FedProx, split, RL+split
+
+Clients = 100 and 200
+
+Evaluate accuracy, variance across clients, fairness
+
+Client participation and stragglers
+
+Partial participation ratios: 10%, 30%, 50%, 100%
+
+Randomly drop clients per round
+
+
+Tier 1: Core Baselines
+All 4 datasets (MNIST, FMNIST, CIFAR-10, CIFAR-100)
+All 5 architectures (Centralized, FedAvg, FedProx, FL-SplitLearning, RL-FL-SplitLearning)
+CNN model only
+10 clients, 100 rounds
+Tier 2: Model Comparison
+2 datasets (MNIST, CIFAR-10)
+Best architecture (RL-FL-SplitLearning)
+All 5 models (CNN, MobileNetV4, DenseNet169, ResNet50, ConvNeXt)
+10 clients, 100 rounds
+Tier 3: Scalability Study
+All 4 datasets
+RL-FL-SplitLearning
+MobileNetV4
+All client configs (5, 10, 100, 200)
+100 rounds
+Tier 4: Convergence Analysis
+2 datasets (MNIST, CIFAR-10)
+RL-FL-SplitLearning
+ResNet50
+10 clients
+All rounds (10, 20, 50, 100)

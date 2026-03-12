@@ -1,0 +1,108 @@
+Experiment Log - ResNet50
+Started: 2026-01-07 14:06:05.598570
+================================================================================
+
+Configurations:
+  MNIST: 5 clients, 10 rounds
+  FMNIST: 5 clients, 10 rounds
+  CIFAR-10: 5 clients, 10 rounds
+  CIFAR-100: 5 clients, 10 rounds
+
+================================================================================
+
+
+================================================================================
+Experiment 1: MNIST
+================================================================================
+Started: 2026-01-07 14:06:05.600902
+Completed: 2026-01-07 14:06:14.769478
+Duration: ~0 min
+Estimated: ~30 min
+
+
+Select Model Architecture:
+============================================================
+1: CNN (Baseline)
+2: ResNet50 (Deep Residual Network)
+3: MobileNetV4 (Efficient Mobile Architecture)
+4: ConvNeXt (Modern CNN with Vision Transformer Design)
+============================================================
+Enter model number (1-4): 
+Selected model: ResNet50
+Enter the total number of clients: Enter the number of rounds: ================================================================================
+CAPABILITY-AWARE Q-LEARNING FOR SPLIT POINT OPTIMIZATION (MNIST)
+================================================================================
+
+Configuration:
+  Clients: 5, Selected per round: 3
+  Total layers: 10
+  Rounds per episode: 10, Episodes: 1
+  Use Committee DQN: True (M=3)
+  Use Reward Committee: True
+================================================================================
+
+ Loading and preparing MNIST dataset...
+ Dataset prepared: 5 clients with heterogeneous data
+
+Initializing components...
+ Committee DQN initialized (M=3)
+ Reward Committee initialized (M=3)
+
+ Starting training...
+================================================================================
+
+================================================================================
+EPISODE 1/1
+================================================================================
+
+--- Round 1/10 ---
+Selected Clients: [0, 4, 2]
+Cluster: Overall=0.750, Variance=0.129
+Split: 7 (Random (epsilon=1.000))
+Training Client 0...
+
+Errors:
+Traceback (most recent call last):
+  File "C:\Users\nshadin\OneDrive - Kennesaw State University\QSplitFL\complete_rl_implementation\MNIST\main_complete_rl.py", line 296, in <module>
+    round_metrics = server.train_split_round(
+        [c.client_side_model for c in selected_clients],
+        selected_clients,
+        epochs=5
+    )
+  File "C:\Users\nshadin\OneDrive - Kennesaw State University\QSplitFL\complete_rl_implementation\MNIST\server.py", line 200, in train_split_round
+    outputs = self.server_side_model(client_activations)
+  File "C:\Users\nshadin\AppData\Roaming\Python\Python313\site-packages\torch\nn\modules\module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\nshadin\AppData\Roaming\Python\Python313\site-packages\torch\nn\modules\module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "C:\Users\nshadin\OneDrive - Kennesaw State University\QSplitFL\complete_rl_implementation\MNIST\models.py", line 2379, in forward
+    return self._forward_server(x)
+           ~~~~~~~~~~~~~~~~~~~~^^^
+  File "C:\Users\nshadin\OneDrive - Kennesaw State University\QSplitFL\complete_rl_implementation\MNIST\models.py", line 2469, in _forward_server
+    x = self.layer3[i](x)
+  File "C:\Users\nshadin\AppData\Roaming\Python\Python313\site-packages\torch\nn\modules\module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\nshadin\AppData\Roaming\Python\Python313\site-packages\torch\nn\modules\module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "C:\Users\nshadin\OneDrive - Kennesaw State University\QSplitFL\complete_rl_implementation\MNIST\models.py", line 2231, in forward
+    out = self.conv1(x)
+  File "C:\Users\nshadin\AppData\Roaming\Python\Python313\site-packages\torch\nn\modules\module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\nshadin\AppData\Roaming\Python\Python313\site-packages\torch\nn\modules\module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "C:\Users\nshadin\AppData\Roaming\Python\Python313\site-packages\torch\nn\modules\conv.py", line 548, in forward
+    return self._conv_forward(input, self.weight, self.bias)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nshadin\AppData\Roaming\Python\Python313\site-packages\torch\nn\modules\conv.py", line 543, in _conv_forward
+    return F.conv2d(
+           ~~~~~~~~^
+        input, weight, bias, self.stride, self.padding, self.dilation, self.groups
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+RuntimeError: Given groups=1, weight of size [256, 1024, 1, 1], expected input[128, 512, 7, 7] to have 1024 channels, but got 512 channels instead
+
+

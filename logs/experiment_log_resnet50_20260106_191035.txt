@@ -1,0 +1,93 @@
+Experiment Log - ResNet50
+Started: 2026-01-06 19:10:35.837636
+================================================================================
+
+Configurations:
+  MNIST: 5 clients, 10 rounds
+  FMNIST: 5 clients, 10 rounds
+  CIFAR-10: 5 clients, 10 rounds
+  CIFAR-100: 5 clients, 10 rounds
+
+================================================================================
+
+
+================================================================================
+Experiment 1: MNIST
+================================================================================
+Started: 2026-01-06 19:10:35.838487
+Completed: 2026-01-06 19:10:35.891588
+Duration: ~0 min
+Estimated: ~30 min
+
+
+Errors:
+  File "C:\Users\nshadin\OneDrive - Kennesaw State University\QSplitFL\complete_rl_implementation\MNIST\main_complete_rl.py", line 47
+    print("
+          ^
+SyntaxError: unterminated string literal (detected at line 47)
+
+
+
+================================================================================
+Experiment 2: FMNIST
+================================================================================
+Started: 2026-01-06 19:10:42.875917
+Completed: 2026-01-06 19:10:42.914053
+Duration: ~0 min
+Estimated: ~35 min
+
+
+Errors:
+  File "C:\Users\nshadin\OneDrive - Kennesaw State University\QSplitFL\complete_rl_implementation\FMNIST\main_complete_rl.py", line 47
+    print("
+          ^
+SyntaxError: unterminated string literal (detected at line 47)
+
+
+
+================================================================================
+Experiment 3: CIFAR-10
+================================================================================
+Started: 2026-01-06 19:10:44.309816
+Completed: 2026-01-06 19:10:44.348537
+Duration: ~0 min
+Estimated: ~2.9 hours
+
+
+Errors:
+  File "C:\Users\nshadin\OneDrive - Kennesaw State University\QSplitFL\complete_rl_implementation\CIFAR10\main_complete_rl.py", line 46
+    print("
+          ^
+SyntaxError: unterminated string literal (detected at line 46)
+
+
+
+================================================================================
+Experiment 4: CIFAR-100
+================================================================================
+Started: 2026-01-06 19:10:45.326088
+Completed: 2026-01-06 19:10:45.364715
+Duration: ~0 min
+Estimated: ~4.2 hours
+
+
+Errors:
+  File "C:\Users\nshadin\OneDrive - Kennesaw State University\QSplitFL\complete_rl_implementation\CIFAR-100\main_complete_rl.py", line 46
+    print("
+          ^
+SyntaxError: unterminated string literal (detected at line 46)
+
+
+
+================================================================================
+FINAL SUMMARY
+================================================================================
+Model: ResNet50
+Completed: 2026-01-06 19:10:45.366583
+
+Results:
+--------------------------------------------------------------------------------
+MNIST: FAILED - Clients: 5, Rounds: 10, Accuracy: N/A, Time: ~0 min
+FMNIST: FAILED - Clients: 5, Rounds: 10, Accuracy: N/A, Time: ~0 min
+CIFAR-10: FAILED - Clients: 5, Rounds: 10, Accuracy: N/A, Time: ~0 min
+CIFAR-100: FAILED - Clients: 5, Rounds: 10, Accuracy: N/A, Time: ~0 min

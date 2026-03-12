@@ -1,0 +1,12 @@
+Experiment Log - ResNet50
+Started: 2026-01-07 12:29:49.337087
+================================================================================
+
+Configurations:
+  MNIST: 5 clients, 10 rounds
+  FMNIST: 5 clients, 10 rounds
+  CIFAR-10: 5 clients, 10 rounds
+  CIFAR-100: 5 clients, 10 rounds
+
+================================================================================
+

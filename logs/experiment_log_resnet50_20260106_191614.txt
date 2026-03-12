@@ -1,0 +1,197 @@
+Experiment Log - ResNet50
+Started: 2026-01-06 19:16:14.411645
+================================================================================
+
+Configurations:
+  MNIST: 5 clients, 10 rounds
+  FMNIST: 5 clients, 10 rounds
+  CIFAR-10: 5 clients, 10 rounds
+  CIFAR-100: 5 clients, 10 rounds
+
+================================================================================
+
+
+================================================================================
+Experiment 1: MNIST
+================================================================================
+Started: 2026-01-06 19:16:14.412976
+Completed: 2026-01-06 19:16:23.442128
+Duration: ~0 min
+Estimated: ~30 min
+
+
+Select Model Architecture:
+============================================================
+1: CNN (Baseline)
+2: ResNet50 (Deep Residual Network)
+3: MobileNetV4 (Efficient Mobile Architecture)
+4: ConvNeXt (Modern CNN with Vision Transformer Design)
+============================================================
+Enter model number (1-4): 
+Selected model: ResNet50
+Enter the total number of clients: Enter the number of rounds: ================================================================================
+CAPABILITY-AWARE Q-LEARNING FOR SPLIT POINT OPTIMIZATION (MNIST)
+================================================================================
+
+Configuration:
+  Clients: 5, Selected per round: 3
+  Total layers: 10
+  Rounds per episode: 10, Episodes: 1
+  Use Committee DQN: True (M=3)
+  Use Reward Committee: True
+================================================================================
+
+ Loading and preparing MNIST dataset...
+ Dataset prepared: 5 clients with heterogeneous data
+
+Initializing components...
+
+Errors:
+Traceback (most recent call last):
+  File "C:\Users\nshadin\OneDrive - Kennesaw State University\QSplitFL\complete_rl_implementation\MNIST\main_complete_rl.py", line 172, in <module>
+    server = Server(mnist_test_dataset)
+TypeError: Server.__init__() missing 1 required positional argument: 'model_instance'
+
+
+
+================================================================================
+Experiment 2: FMNIST
+================================================================================
+Started: 2026-01-06 19:16:41.303166
+Completed: 2026-01-06 19:16:44.396139
+Duration: ~0 min
+Estimated: ~35 min
+
+
+Select Model Architecture:
+============================================================
+1: CNN (Baseline)
+2: ResNet50 (Deep Residual Network)
+3: MobileNetV4 (Efficient Mobile Architecture)
+4: ConvNeXt (Modern CNN with Vision Transformer Design)
+============================================================
+Enter model number (1-4): 
+Selected model: ResNet50
+Enter the total number of clients: Enter the number of rounds: ================================================================================
+CAPABILITY-AWARE Q-LEARNING FOR SPLIT POINT OPTIMIZATION (FMNIST)
+================================================================================
+
+Configuration:
+  Clients: 5, Selected per round: 3
+  Total layers: 10
+  Rounds per episode: 10, Episodes: 1
+  Use Committee DQN: True (M=3)
+  Use Reward Committee: True
+================================================================================
+
+ Loading and preparing Fashion-MNIST dataset...
+ Dataset prepared: 5 clients with heterogeneous data
+
+Initializing components...
+
+Errors:
+Traceback (most recent call last):
+  File "C:\Users\nshadin\OneDrive - Kennesaw State University\QSplitFL\complete_rl_implementation\FMNIST\main_complete_rl.py", line 172, in <module>
+    server = Server(fmnist_test_dataset)
+TypeError: Server.__init__() missing 1 required positional argument: 'model_instance'
+
+
+
+================================================================================
+Experiment 3: CIFAR-10
+================================================================================
+Started: 2026-01-06 19:16:45.741240
+Completed: 2026-01-06 19:16:50.165636
+Duration: ~0 min
+Estimated: ~2.9 hours
+
+
+Select Model Architecture:
+============================================================
+1: CNN (Baseline)
+2: ResNet50 (Deep Residual Network)
+3: MobileNetV4 (Efficient Mobile Architecture)
+4: ConvNeXt (Modern CNN with Vision Transformer Design)
+============================================================
+Enter model number (1-4): 
+Selected model: ResNet50
+Enter the total number of clients: Enter the number of rounds: ================================================================================
+CAPABILITY-AWARE Q-LEARNING FOR SPLIT POINT OPTIMIZATION
+================================================================================
+
+Configuration:
+  Clients: 5, Selected per round: 3
+  Total layers: 10
+  Rounds per episode: 10, Episodes: 1
+  Use Committee DQN: True (M=3)
+  Use Reward Committee: True
+================================================================================
+
+ Loading and preparing CIFAR-10 dataset...
+ Dataset prepared: 5 clients with heterogeneous data
+
+Initializing components...
+
+Errors:
+Traceback (most recent call last):
+  File "C:\Users\nshadin\OneDrive - Kennesaw State University\QSplitFL\complete_rl_implementation\CIFAR10\main_complete_rl.py", line 173, in <module>
+    server = Server(cifar_test_dataset)
+TypeError: Server.__init__() missing 1 required positional argument: 'model_instance'
+
+
+
+================================================================================
+Experiment 4: CIFAR-100
+================================================================================
+Started: 2026-01-06 19:16:51.442643
+Completed: 2026-01-06 19:16:55.792911
+Duration: ~0 min
+Estimated: ~4.2 hours
+
+
+Select Model Architecture:
+============================================================
+1: CNN (Baseline)
+2: ResNet50 (Deep Residual Network)
+3: MobileNetV4 (Efficient Mobile Architecture)
+4: ConvNeXt (Modern CNN with Vision Transformer Design)
+============================================================
+Enter model number (1-4): 
+Selected model: ResNet50
+Enter the total number of clients: Enter the number of rounds: ================================================================================
+CAPABILITY-AWARE Q-LEARNING FOR SPLIT POINT OPTIMIZATION (CIFAR-100)
+================================================================================
+
+Configuration:
+  Clients: 5, Selected per round: 3
+  Total layers: 10
+  Rounds per episode: 10, Episodes: 1
+  Use Committee DQN: True (M=3)
+  Use Reward Committee: True
+================================================================================
+
+ Loading and preparing CIFAR-100 dataset...
+ Dataset prepared: 5 clients with heterogeneous data
+
+Initializing components...
+
+Errors:
+Traceback (most recent call last):
+  File "C:\Users\nshadin\OneDrive - Kennesaw State University\QSplitFL\complete_rl_implementation\CIFAR-100\main_complete_rl.py", line 173, in <module>
+    server = Server(cifar100_test_dataset, num_classes=100)
+TypeError: Server.__init__() got multiple values for argument 'num_classes'
+
+
+
+================================================================================
+FINAL SUMMARY
+================================================================================
+Model: ResNet50
+Completed: 2026-01-06 19:16:55.794726
+
+Results:
+--------------------------------------------------------------------------------
+MNIST: FAILED - Clients: 5, Rounds: 10, Accuracy: N/A, Time: ~0 min
+FMNIST: FAILED - Clients: 5, Rounds: 10, Accuracy: N/A, Time: ~0 min
+CIFAR-10: FAILED - Clients: 5, Rounds: 10, Accuracy: N/A, Time: ~0 min
+CIFAR-100: FAILED - Clients: 5, Rounds: 10, Accuracy: N/A, Time: ~0 min
