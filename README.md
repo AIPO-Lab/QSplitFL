@@ -2,8 +2,6 @@
 
 QSplitFL is a novel framework that applies Reinforcement Learning to adaptively select split points in Federated Split Learning. Instead of manually choosing where to divide a neural network between clients and a server, a capability-aware Deep Q-Network (DQN) agent learns the optimal split point dynamically based on real-time client hardware conditions.
 
-This repository implements the algorithms described in the paper: **"Reinforcement Learning Design for Split Learning in a Federated Learning Client Cluster"**.
-
 ---
 
 ## Background
@@ -271,6 +269,7 @@ Data is partitioned across clients using a Dirichlet distribution (alpha=0.5) to
 ## Results
 
 Training produces per-round accuracy and loss logs, summary CSV files, and visualization plots. Results are saved to dataset-specific subdirectories under `complete_rl_implementation/` (e.g., `MNIST/`, `CIFAR10/`). Processed figures for publication are in `Paper_Figures/` and `Paper_Figures_New/`.
+
 
 
 
