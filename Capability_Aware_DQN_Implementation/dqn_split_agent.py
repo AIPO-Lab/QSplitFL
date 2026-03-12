@@ -491,5 +491,6 @@ if __name__ == "__main__":
     # Print summary
     agent.print_summary()
     
-    print("\n✅ All tests passed!")
+    print("\n All tests passed!")
+
 
