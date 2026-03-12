@@ -2,10 +2,6 @@
 Main Training Script: Capability-Aware DQN for Split Learning
 ===============================================================
 
-This script implements the complete training pipeline combining:
-- Algorithm 6: Capability-Aware DQN with Experience Replay
-- Algorithm 8: TrainRoundSFL (Split Learning Round Execution)
-
 The system learns to select optimal split points based on client capabilities
 to minimize federated learning loss while considering resource constraints.
 
@@ -579,9 +575,10 @@ def main():
     agent.save_model('results/dqn_model.pth')
     logger.info("Saved DQN model to results/dqn_model.pth")
     
-    logger.info("\n✅ Training complete! Check results/ directory for outputs.")
+    logger.info("\n Training complete! Check results/ directory for outputs.")
 
 
 if __name__ == "__main__":
     main()
+
 
