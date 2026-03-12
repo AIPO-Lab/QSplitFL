@@ -501,5 +501,6 @@ if __name__ == "__main__":
     # Print summary
     env.print_summary()
     
-    print("\n✅ All tests passed!")
+    print("\n All tests passed!")
+
 
